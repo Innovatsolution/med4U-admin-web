@@ -26,21 +26,21 @@ import {
 } from '@mui/material';
 
 import Label from '@/components/Label';
-import { CryptoOrder, CryptoOrderStatus } from '@/models/crypto_order';
+import { RoleManagement, RoleManagementStatus } from '@/models/crypto_order';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import BulkActions from './BulkActions';
 
 interface RecentOrdersTableProps {
   className?: string;
-  cryptoOrders: CryptoOrder[];
+  RoleManagements: RoleManagement[];
 }
 
 interface Filters {
-  status?: CryptoOrderStatus;
+  status?: RoleManagementStatus;
 }
 
-const getStatusLabel = (cryptoOrderStatus: CryptoOrderStatus): JSX.Element => {
+const getStatusLabel = (RoleManagementStatus: RoleManagementStatus): JSX.Element => {
   const map = {
     failed: {
       text: 'Failed',
@@ -56,19 +56,19 @@ const getStatusLabel = (cryptoOrderStatus: CryptoOrderStatus): JSX.Element => {
     }
   };
 
-  const { text, color }: any = map[cryptoOrderStatus];
+  const { text, color }: any = map[RoleManagementStatus];
 
   return <Label color={color}>{text}</Label>;
 };
 
 const applyFilters = (
-  cryptoOrders: CryptoOrder[],
+  RoleManagements: RoleManagement[],
   filters: Filters
-): CryptoOrder[] => {
-  return cryptoOrders.filter((cryptoOrder) => {
+): RoleManagement[] => {
+  return RoleManagements.filter((RoleManagement) => {
     let matches = true;
 
-    if (filters.status && cryptoOrder.status !== filters.status) {
+    if (filters.status && RoleManagement.status !== filters.status) {
       matches = false;
     }
 
@@ -77,44 +77,60 @@ const applyFilters = (
 };
 
 const applyPagination = (
-  cryptoOrders: CryptoOrder[],
+  RoleManagements: RoleManagement[],
   page: number,
   limit: number
-): CryptoOrder[] => {
-  return cryptoOrders.slice(page * limit, page * limit + limit);
+): RoleManagement[] => {
+  return RoleManagements.slice(page * limit, page * limit + limit);
 };
 
-const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
-  const [selectedCryptoOrders, setSelectedCryptoOrders] = useState<string[]>(
+const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ RoleManagements }) => {
+  const [selectedRoleManagements, setSelectedRoleManagements] = useState<string[]>(
     []
   );
-  const selectedBulkActions = selectedCryptoOrders.length > 0;
+  const selectedBulkActions = selectedRoleManagements.length > 0;
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [filters, setFilters] = useState<Filters>({
     status: null
   });
 
-  const statusOptions = [
-    {
-      id: 'all',
-      name: 'All'
+  const roleOptions = [
+    { 
+      id : 'all',
+      name : 'All'
     },
-    {
-      id: 'completed',
-      name: 'Completed'
+    { 
+      id : 'Admin',
+      name : 'Admin'
     },
-    {
-      id: 'pending',
-      name: 'Pending'
+    { 
+      id : 'Project Manager',
+      name : 'Project Manager'
     },
-    {
-      id: 'failed',
-      name: 'Failed'
+    { 
+      id : 'Doctor',
+      name : 'Doctor'
+    },
+    { 
+      id : 'Nurse',
+      name : 'Nurse'
+    },
+    { 
+      id : 'Office Assistant',
+      name : 'Office Assistant'
+    },
+    { 
+      id : 'Client Project Manager',
+      name : 'Client Project Manager'
+    },
+    { 
+      id : 'Client Sponsor',
+      name : 'Client Sponsor'
     }
   ];
 
-  const handleStatusChange = (e: ChangeEvent<HTMLInputElement>): void => {
+  const handleRoleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     let value = null;
 
     if (e.target.value !== 'all') {
@@ -127,28 +143,28 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
     }));
   };
 
-  const handleSelectAllCryptoOrders = (
+  const handleSelectAllRoleManagements = (
     event: ChangeEvent<HTMLInputElement>
   ): void => {
-    setSelectedCryptoOrders(
+    setSelectedRoleManagements(
       event.target.checked
-        ? cryptoOrders.map((cryptoOrder) => cryptoOrder.id)
+        ? RoleManagements.map((RoleManagement) => RoleManagement.id)
         : []
     );
   };
 
-  const handleSelectOneCryptoOrder = (
+  const handleSelectOneRoleManagement = (
     _event: ChangeEvent<HTMLInputElement>,
-    cryptoOrderId: string
+    RoleManagementId: string
   ): void => {
-    if (!selectedCryptoOrders.includes(cryptoOrderId)) {
-      setSelectedCryptoOrders((prevSelected) => [
+    if (!selectedRoleManagements.includes(RoleManagementId)) {
+      setSelectedRoleManagements((prevSelected) => [
         ...prevSelected,
-        cryptoOrderId
+        RoleManagementId
       ]);
     } else {
-      setSelectedCryptoOrders((prevSelected) =>
-        prevSelected.filter((id) => id !== cryptoOrderId)
+      setSelectedRoleManagements((prevSelected) =>
+        prevSelected.filter((id) => id !== RoleManagementId)
       );
     }
   };
@@ -161,17 +177,17 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
     setLimit(parseInt(event.target.value));
   };
 
-  const filteredCryptoOrders = applyFilters(cryptoOrders, filters);
-  const paginatedCryptoOrders = applyPagination(
-    filteredCryptoOrders,
+  const filteredRoleManagements = applyFilters(RoleManagements, filters);
+  const paginatedRoleManagements = applyPagination(
+    filteredRoleManagements,
     page,
     limit
   );
-  const selectedSomeCryptoOrders =
-    selectedCryptoOrders.length > 0 &&
-    selectedCryptoOrders.length < cryptoOrders.length;
-  const selectedAllCryptoOrders =
-    selectedCryptoOrders.length === cryptoOrders.length;
+  const selectedSomeRoleManagements =
+    selectedRoleManagements.length > 0 &&
+    selectedRoleManagements.length < RoleManagements.length;
+  const selectedAllRoleManagements =
+    selectedRoleManagements.length === RoleManagements.length;
   const theme = useTheme();
 
   return (
@@ -186,23 +202,23 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
           action={
             <Box width={150}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel>Status</InputLabel>
+                <InputLabel>Role</InputLabel>
                 <Select
                   value={filters.status || 'all'}
-                  onChange={handleStatusChange}
-                  label="Status"
+                  onChange={handleRoleChange}
+                  label="Role"
                   autoWidth
                 >
-                  {statusOptions.map((statusOption) => (
-                    <MenuItem key={statusOption.id} value={statusOption.id}>
-                      {statusOption.name}
+                  {roleOptions.map((roleOption) => (
+                    <MenuItem key={roleOption.id} value={roleOption.id}>
+                      {roleOption.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Box>
           }
-          title="Recent Orders"
+          title="User Roles"
         />
       )}
       <Divider />
@@ -213,98 +229,38 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
               <TableCell padding="checkbox">
                 <Checkbox
                   color="primary"
-                  checked={selectedAllCryptoOrders}
-                  indeterminate={selectedSomeCryptoOrders}
-                  onChange={handleSelectAllCryptoOrders}
+                  checked={selectedAllRoleManagements}
+                  indeterminate={selectedSomeRoleManagements}
+                  onChange={handleSelectAllRoleManagements}
                 />
               </TableCell>
-              <TableCell>Order Details</TableCell>
-              <TableCell>Order ID</TableCell>
-              <TableCell>Source</TableCell>
-              <TableCell align="right">Amount</TableCell>
-              <TableCell align="right">Status</TableCell>
+              <TableCell>Role Name</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedCryptoOrders.map((cryptoOrder) => {
-              const isCryptoOrderSelected = selectedCryptoOrders.includes(
-                cryptoOrder.id
+            {paginatedRoleManagements.map((RoleManagement) => {
+              const isRoleManagementSelected = selectedRoleManagements.includes(
+                RoleManagement.id
               );
               return (
                 <TableRow
                   hover
-                  key={cryptoOrder.id}
-                  selected={isCryptoOrderSelected}
+                  key={RoleManagement.id}
+                  selected={isRoleManagementSelected}
                 >
                   <TableCell padding="checkbox">
                     <Checkbox
                       color="primary"
-                      checked={isCryptoOrderSelected}
+                      checked={isRoleManagementSelected}
                       onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                        handleSelectOneCryptoOrder(event, cryptoOrder.id)
+                        handleSelectOneRoleManagement(event, RoleManagement.id)
                       }
-                      value={isCryptoOrderSelected}
+                      value={isRoleManagementSelected}
                     />
                   </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body1"
-                      fontWeight="bold"
-                      color="text.primary"
-                      gutterBottom
-                      noWrap
-                    >
-                      {cryptoOrder.orderDetails}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" noWrap>
-                      {format(cryptoOrder.orderDate, 'MMMM dd yyyy')}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body1"
-                      fontWeight="bold"
-                      color="text.primary"
-                      gutterBottom
-                      noWrap
-                    >
-                      {cryptoOrder.orderID}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body1"
-                      fontWeight="bold"
-                      color="text.primary"
-                      gutterBottom
-                      noWrap
-                    >
-                      {cryptoOrder.sourceName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" noWrap>
-                      {cryptoOrder.sourceDesc}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography
-                      variant="body1"
-                      fontWeight="bold"
-                      color="text.primary"
-                      gutterBottom
-                      noWrap
-                    >
-                      {cryptoOrder.amountCrypto}
-                      {cryptoOrder.cryptoCurrency}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" noWrap>
-                      {numeral(cryptoOrder.amount).format(
-                        `${cryptoOrder.currency}0,0.00`
-                      )}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    {getStatusLabel(cryptoOrder.status)}
+                  <TableCell align="left">
+                    {RoleManagement.roleName}
                   </TableCell>
                   <TableCell align="right">
                     <Tooltip title="Edit Order" arrow>
@@ -343,7 +299,7 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
       <Box p={2}>
         <TablePagination
           component="div"
-          count={filteredCryptoOrders.length}
+          count={filteredRoleManagements.length}
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleLimitChange}
           page={page}
@@ -356,11 +312,11 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ cryptoOrders }) => {
 };
 
 RecentOrdersTable.propTypes = {
-  cryptoOrders: PropTypes.array.isRequired
+  RoleManagements: PropTypes.array.isRequired
 };
 
 RecentOrdersTable.defaultProps = {
-  cryptoOrders: []
+  RoleManagements: []
 };
 
 export default RecentOrdersTable;
