@@ -74,7 +74,7 @@ const UserRoleCreateModals = (props) => {
           <Grid item xs={12}>
             <Card>
               <CardHeader title="Add User Role" />
-                <Tooltip title="Close" arrow>
+                {/* <Tooltip title="Close" arrow>
                     <IconButton
                     color="inherit"
                     size="small"
@@ -82,7 +82,7 @@ const UserRoleCreateModals = (props) => {
                     >
                     <CloseTwoTone fontSize="small" onClick={props.handleModalClose}/>
                     </IconButton>
-                </Tooltip>
+                </Tooltip> */}
               <Divider />
               <CardContent>
                 <Box component="form" noValidate autoComplete="off">
