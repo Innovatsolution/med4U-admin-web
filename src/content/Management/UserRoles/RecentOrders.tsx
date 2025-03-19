@@ -5,53 +5,35 @@ function RecentOrders() {
   const RoleManagements: any = [
     {
       id: '1',
-      roleName: 'Fiat Deposit',
-      status: 'completed',
+      name: 'Admin',
     },
     {
       id: '2',
-      roleName: 'Fiat Deposit',
-      status: 'completed',
+      name: 'Project Manager',
     },
     {
       id: '3',
-      roleName: 'Fiat Deposit',
-      status: 'failed',
+      name: 'Doctor',
     },
     {
       id: '4',
-      roleName: 'Fiat Deposit',
-      status: 'completed',
+      name: 'Nurse',
     },
     {
       id: '5',
-      roleName: 'Fiat Deposit',
-      status: 'pending',
+      name: 'Office Assistant',
     },
     {
       id: '6',
-      roleName: 'Fiat Deposit',
-      status: 'completed',
+      name: 'Project Manager',
     },
     {
       id: '7',
-      roleName: 'Fiat Deposit',
-      status: 'pending',
+      name: 'Client Sponsor',
     },
     {
       id: '8',
-      roleName: 'Paypal Withdraw',
-      status: 'completed',
-    },
-    {
-      id: '9',
-      roleName: 'Fiat Deposit',
-      status: 'completed',
-    },
-    {
-      id: '10',
-      roleName: 'Wallet Transfer',
-      status: 'failed',
+      name: 'Paypal Withdraw',
     }
   ];
 
