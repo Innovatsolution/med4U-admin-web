@@ -11,8 +11,6 @@
         Button,
         Typography,
         FormControlLabel,
-        Tooltip,
-        IconButton,
         FormGroup,
         Switch,
         styled
@@ -30,7 +28,7 @@
     import DirectionsCarTwoToneIcon from '@mui/icons-material/DirectionsCarTwoTone';
     import BarChartTwoToneIcon from '@mui/icons-material/BarChartTwoTone';
     import CommuteTwoToneIcon from '@mui/icons-material/CommuteTwoTone';
-    import CloseTwoTone from "@mui/icons-material/CloseTwoTone";
+
 
 
   const TimelineWrapper = styled(Timeline)(

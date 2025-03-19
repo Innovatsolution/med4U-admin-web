@@ -166,7 +166,7 @@ const menuOptions = [
   { name: "User Management", path: "/user-management", icon: <PeopleAltTwoToneIcon /> },
   { name: "Users", path: "/users", icon: <PersonOutlineTwoToneIcon /> },
   { name: "Projects", path: "/projects", icon: <DesignServicesTwoToneIcon /> },
-  { name: "Vehicle Management", path: "/", icon: <DirectionsCarTwoToneIcon /> },
+  { name: "Vehicle Management", path: "/vehicle", icon: <DirectionsCarTwoToneIcon /> },
   { name: "Reports & Analytics", path: "/reports", icon: <BarChartTwoToneIcon /> },
   { name: "Vehicle Trip Details", path: "/trip-details", icon: <CommuteTwoToneIcon /> },
 ];
