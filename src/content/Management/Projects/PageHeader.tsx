@@ -1,20 +1,22 @@
 import { Typography, Button, Grid } from '@mui/material';
 
 import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
+import { useState } from 'react';
+import ProjectForm from './ProjectsForm';
 
 function PageHeader() {
-  const user = {
-    name: 'Catherine Pike',
-    avatar: '/static/images/avatars/1.jpg'
-  };
+  const [open, setOpen] = useState(false);
+
+  
+    const handleClose = () => {
+      setOpen(false);
+    };
+
   return (
     <Grid container justifyContent="space-between" alignItems="center">
       <Grid item>
         <Typography variant="h3" component="h3" gutterBottom>
           Projects
-        </Typography>
-        <Typography variant="subtitle2">
-          {user.name}, these are your recent transactions
         </Typography>
       </Grid>
       <Grid item>
@@ -22,10 +24,12 @@ function PageHeader() {
           sx={{ mt: { xs: 2, md: 0 } }}
           variant="contained"
           startIcon={<AddTwoToneIcon fontSize="small" />}
+          onClick={()=>setOpen(true)}
         >
-          Create transaction
+          Create Project
         </Button>
       </Grid>
+      <ProjectForm open={open} handleClose={handleClose} editProject={null}/>
     </Grid>
   );
 }
