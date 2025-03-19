@@ -13,3 +13,10 @@ export interface CryptoOrder {
   cryptoCurrency: string;
   currency: string;
 }
+
+export interface RoleManagement {
+  id: string;
+  name: string;
+  created_at?: number;
+}
+

@@ -1,15 +1,11 @@
 import { FC, ChangeEvent, useState } from 'react';
-import { format } from 'date-fns';
-import numeral from 'numeral';
 import PropTypes from 'prop-types';
 import {
   Tooltip,
   Divider,
   Box,
   FormControl,
-  InputLabel,
   Card,
-  Checkbox,
   IconButton,
   Table,
   TableBody,
@@ -18,18 +14,21 @@ import {
   TablePagination,
   TableRow,
   TableContainer,
-  Select,
-  MenuItem,
-  Typography,
-  useTheme,
+  TextField,
   CardHeader
 } from '@mui/material';
 
-import Label from '@/components/Label';
-import { RoleManagement, RoleManagementStatus } from '@/models/crypto_order';
+import { RoleManagement } from '@/models/crypto_order';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
-import BulkActions from './BulkActions';
+import UserRoleCreateModals from "./userRoleForm";
+import DeleteModal from '../../common/DeleteConfirm';
+
+interface Role {
+  id: string;
+  name: string;
+  created_at?: number;
+}
 
 interface RecentOrdersTableProps {
   className?: string;
@@ -37,29 +36,8 @@ interface RecentOrdersTableProps {
 }
 
 interface Filters {
-  status?: RoleManagementStatus;
+  search?: string;
 }
-
-const getStatusLabel = (RoleManagementStatus: RoleManagementStatus): JSX.Element => {
-  const map = {
-    failed: {
-      text: 'Failed',
-      color: 'error'
-    },
-    completed: {
-      text: 'Completed',
-      color: 'success'
-    },
-    pending: {
-      text: 'Pending',
-      color: 'warning'
-    }
-  };
-
-  const { text, color }: any = map[RoleManagementStatus];
-
-  return <Label color={color}>{text}</Label>;
-};
 
 const applyFilters = (
   RoleManagements: RoleManagement[],
@@ -68,7 +46,7 @@ const applyFilters = (
   return RoleManagements.filter((RoleManagement) => {
     let matches = true;
 
-    if (filters.status && RoleManagement.status !== filters.status) {
+    if (filters.search && RoleManagement.name !== filters.search) {
       matches = false;
     }
 
@@ -85,51 +63,17 @@ const applyPagination = (
 };
 
 const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ RoleManagements }) => {
-  const [selectedRoleManagements, setSelectedRoleManagements] = useState<string[]>(
-    []
-  );
-  const selectedBulkActions = selectedRoleManagements.length > 0;
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [filters, setFilters] = useState<Filters>({
-    status: null
+    search: null
   });
+  const [openRoleModal, setOpenRoleModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
 
-  const roleOptions = [
-    { 
-      id : 'all',
-      name : 'All'
-    },
-    { 
-      id : 'Admin',
-      name : 'Admin'
-    },
-    { 
-      id : 'Project Manager',
-      name : 'Project Manager'
-    },
-    { 
-      id : 'Doctor',
-      name : 'Doctor'
-    },
-    { 
-      id : 'Nurse',
-      name : 'Nurse'
-    },
-    { 
-      id : 'Office Assistant',
-      name : 'Office Assistant'
-    },
-    { 
-      id : 'Client Project Manager',
-      name : 'Client Project Manager'
-    },
-    { 
-      id : 'Client Sponsor',
-      name : 'Client Sponsor'
-    }
-  ];
-
+  
   const handleRoleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     let value = null;
 
@@ -141,32 +85,6 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ RoleManagements }) => {
       ...prevFilters,
       status: value
     }));
-  };
-
-  const handleSelectAllRoleManagements = (
-    event: ChangeEvent<HTMLInputElement>
-  ): void => {
-    setSelectedRoleManagements(
-      event.target.checked
-        ? RoleManagements.map((RoleManagement) => RoleManagement.id)
-        : []
-    );
-  };
-
-  const handleSelectOneRoleManagement = (
-    _event: ChangeEvent<HTMLInputElement>,
-    RoleManagementId: string
-  ): void => {
-    if (!selectedRoleManagements.includes(RoleManagementId)) {
-      setSelectedRoleManagements((prevSelected) => [
-        ...prevSelected,
-        RoleManagementId
-      ]);
-    } else {
-      setSelectedRoleManagements((prevSelected) =>
-        prevSelected.filter((id) => id !== RoleManagementId)
-      );
-    }
   };
 
   const handlePageChange = (_event: any, newPage: number): void => {
@@ -183,112 +101,81 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ RoleManagements }) => {
     page,
     limit
   );
-  const selectedSomeRoleManagements =
-    selectedRoleManagements.length > 0 &&
-    selectedRoleManagements.length < RoleManagements.length;
-  const selectedAllRoleManagements =
-    selectedRoleManagements.length === RoleManagements.length;
-  const theme = useTheme();
+  
+  // Open Delete Modal
+  const handleDeleteRole = (role: Role) => {
+    setRoleToDelete(role);
+    setOpenDeleteModal(true);
+  };
+
+  // Close Delete Modal
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false);
+  };
+
+  // Confirm Delete
+  const handleConfirmDelete = (userId: string) => {
+    console.log(userId);
+    setOpenDeleteModal(false);
+  };
+
+  // Open Edit Modal
+  const handleEditRole = (role: Role) => {
+    setSelectedRole(role);
+    setOpenRoleModal(true);
+  };
+
+  // Close Edit Modal
+  const handleCloseModal = () => {
+    setOpenRoleModal(false);
+  };
 
   return (
     <Card>
-      {selectedBulkActions && (
-        <Box flex={1} p={2}>
-          <BulkActions />
-        </Box>
-      )}
-      {!selectedBulkActions && (
-        <CardHeader
-          action={
-            <Box width={150}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={filters.status || 'all'}
-                  onChange={handleRoleChange}
-                  label="Role"
-                  autoWidth
-                >
-                  {roleOptions.map((roleOption) => (
-                    <MenuItem key={roleOption.id} value={roleOption.id}>
-                      {roleOption.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-          }
-          title="User Roles"
-        />
-      )}
+      <CardHeader
+        action={
+          <Box width={150}>
+            <FormControl fullWidth variant="outlined">
+                <TextField label="Search" type="text" fullWidth value={filters.search} onChange={handleRoleChange} />
+            </FormControl>
+          </Box>
+        }
+        title="User Roles"
+      />
       <Divider />
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  checked={selectedAllRoleManagements}
-                  indeterminate={selectedSomeRoleManagements}
-                  onChange={handleSelectAllRoleManagements}
-                />
-              </TableCell>
               <TableCell>Role Name</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedRoleManagements.map((RoleManagement) => {
-              const isRoleManagementSelected = selectedRoleManagements.includes(
-                RoleManagement.id
-              );
+            {paginatedRoleManagements.map((role) => {
               return (
                 <TableRow
                   hover
-                  key={RoleManagement.id}
-                  selected={isRoleManagementSelected}
+                  key={role.id}
                 >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      color="primary"
-                      checked={isRoleManagementSelected}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                        handleSelectOneRoleManagement(event, RoleManagement.id)
-                      }
-                      value={isRoleManagementSelected}
-                    />
-                  </TableCell>
                   <TableCell align="left">
-                    {RoleManagement.roleName}
+                    {role.name}
                   </TableCell>
                   <TableCell align="right">
-                    <Tooltip title="Edit Order" arrow>
-                      <IconButton
-                        sx={{
-                          '&:hover': {
-                            background: theme.colors.primary.lighter
-                          },
-                          color: theme.palette.primary.main
-                        }}
-                        color="inherit"
-                        size="small"
-                      >
-                        <EditTwoToneIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Order" arrow>
-                      <IconButton
-                        sx={{
-                          '&:hover': { background: theme.colors.error.lighter },
-                          color: theme.palette.error.main
-                        }}
-                        color="inherit"
-                        size="small"
-                      >
-                        <DeleteTwoToneIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      {/* Edit Button */}
+                      <Tooltip title="Edit Role">
+                        <IconButton color="primary" onClick={() => handleEditRole(role)}>
+                          <EditTwoToneIcon />
+                        </IconButton>
+                      </Tooltip>
+                      {/* Delete Button */}
+                      <Tooltip title="Delete Role">
+                        <IconButton color="error" onClick={() => handleDeleteRole(role)}>
+                          <DeleteTwoToneIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -307,6 +194,11 @@ const RecentOrdersTable: FC<RecentOrdersTableProps> = ({ RoleManagements }) => {
           rowsPerPageOptions={[5, 10, 25, 30]}
         />
       </Box>
+      
+      {/* Role Modal */}
+      <UserRoleCreateModals open={openRoleModal} handleModalClose={handleCloseModal} editRole={selectedRole}/>
+      {/* Delete Modal */}
+      <DeleteModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} data={roleToDelete} />
     </Card>
   );
 };
