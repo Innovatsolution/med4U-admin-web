@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "public": "out",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/dashboards/tasks",
+        "destination": "/dashboards/tasks.html"
+      },
+      {
+        "source": "/user-managment",
+        "destination": "/user-management.html"
+      }
+    ]
+  }
+}
