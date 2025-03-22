@@ -21,29 +21,29 @@ import {
 
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
-import ProjectModal from './ProjectsForm';
-import DeleteProjectModal from '../../common/DeleteConfirm';
+import CampModal from './CampForm';
+import DeleteCampModal from '../../common/DeleteConfirm';
 import { format } from 'date-fns';
 
-const ProjectManagementTable = ({ projects }) => {
+const CampManagementTable = ({ camps }) => {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(5);
   const [filters, setFilters] = useState({ status: '' });
   const [openModal, setOpenModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedCamp, setSelectedCamp] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [campToDelete, setCampToDelete] = useState(null);
 
-  const applyFilters = (projects, filters) => {
-    return projects.filter((project) => !filters.status || project.status === filters.status);
+  const applyFilters = (camps, filters) => {
+    return camps.filter((camp) => !filters.status || camp.status === filters.status);
   };
 
-  const applyPagination = (projects, page, limit) => {
-    return projects.slice(page * limit, page * limit + limit);
+  const applyPagination = (camps, page, limit) => {
+    return camps.slice(page * limit, page * limit + limit);
   };
 
-  const handleDeleteProject = (project) => {
-    setProjectToDelete(project);
+  const handleDeleteCamp = (camp) => {
+    setCampToDelete(camp);
     setOpenDeleteModal(true);
   };
 
@@ -51,13 +51,13 @@ const ProjectManagementTable = ({ projects }) => {
     setOpenDeleteModal(false);
   };
 
-  const handleConfirmDelete = (projectId) => {
-    console.log(projectId);
+  const handleConfirmDelete = (campId) => {
+    console.log(campId);
     setOpenDeleteModal(false);
   };
 
-  const handleEditProject = (project) => {
-    setSelectedProject(project);
+  const handleEditCamp = (camp) => {
+    setSelectedCamp(camp);
     setOpenModal(true);
   };
 
@@ -77,8 +77,8 @@ const ProjectManagementTable = ({ projects }) => {
     setLimit(parseInt(event.target.value));
   };
 
-  const filteredProjects = applyFilters(projects, filters);
-  const paginatedProjects = applyPagination(filteredProjects, page, limit);
+  const filteredCamps = applyFilters(camps, filters);
+  const paginatedCamps = applyPagination(filteredCamps, page, limit);
 
   return (
     <Card>
@@ -89,51 +89,53 @@ const ProjectManagementTable = ({ projects }) => {
               <InputLabel>Status</InputLabel>
               <Select value={filters.status || 'all'} onChange={handleStatusChange} label="Status">
                 <MenuItem value="all">All Status</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Planned">Planned</MenuItem>
                 <MenuItem value="Ongoing">Ongoing</MenuItem>
                 <MenuItem value="Completed">Completed</MenuItem>
               </Select>
             </FormControl>
           </Box>
         }
-        title="Projects"
+        title="Camps"
       />
       <Divider />
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Project Name</TableCell>
-              <TableCell>Description</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
-              <TableCell>Client Sponsor</TableCell>
-              <TableCell>Assigned Manager</TableCell>
+              <TableCell>Country</TableCell>
+              <TableCell>State</TableCell>
+              <TableCell>District/City</TableCell>
+              <TableCell>Village/Area</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedProjects.map((project) => (
-              <TableRow hover key={project.id}>
-                <TableCell>{project.name}</TableCell>
-                <TableCell>{project.description}</TableCell>
-                <TableCell>{project.type}</TableCell>
-                <TableCell>{project.status}</TableCell>
-                <TableCell>{format(new Date(project.startDate), 'MMMM dd yyyy')}</TableCell>
-                <TableCell>{format(new Date(project.endDate), 'MMMM dd yyyy')}</TableCell>
-                <TableCell>{project.clientSponsor}</TableCell>
-                <TableCell>{project.assignedManager}</TableCell>
+            {paginatedCamps.map((camp) => (
+              <TableRow hover key={camp.id}>
+                <TableCell>{camp.name}</TableCell>
+                <TableCell>{camp.type}</TableCell>
+                <TableCell>{camp.status}</TableCell>
+                <TableCell>{format(new Date(camp.startDate), 'MMMM dd yyyy')}</TableCell>
+                <TableCell>{format(new Date(camp.endDate), 'MMMM dd yyyy')}</TableCell>
+                <TableCell>{camp.country}</TableCell>
+                <TableCell>{camp.state}</TableCell>
+                <TableCell>{camp.district}</TableCell>
+                <TableCell>{camp.village}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Tooltip title="Edit Project">
-                      <IconButton color="primary" onClick={() => handleEditProject(project)}>
+                    <Tooltip title="Edit Camp">
+                      <IconButton color="primary" onClick={() => handleEditCamp(camp)}>
                         <EditTwoToneIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Delete Project">
-                      <IconButton color="error" onClick={() => handleDeleteProject(project)}>
+                    <Tooltip title="Delete Camp">
+                      <IconButton color="error" onClick={() => handleDeleteCamp(camp)}>
                         <DeleteTwoToneIcon />
                       </IconButton>
                     </Tooltip>
@@ -147,7 +149,7 @@ const ProjectManagementTable = ({ projects }) => {
       <Box p={2}>
         <TablePagination
           component="div"
-          count={filteredProjects.length}
+          count={filteredCamps.length}
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleLimitChange}
           page={page}
@@ -155,10 +157,10 @@ const ProjectManagementTable = ({ projects }) => {
           rowsPerPageOptions={[5, 10, 25, 30]}
         />
       </Box>
-      <ProjectModal open={openModal} handleClose={handleCloseModal} editProject={selectedProject} />
-      <DeleteProjectModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} data={projectToDelete} />
+      <CampModal open={openModal} handleClose={handleCloseModal} editCamp={selectedCamp} />
+      <DeleteCampModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} data={campToDelete} />
     </Card>
   );
 };
 
-export default ProjectManagementTable;
+export default CampManagementTable;
