@@ -1,6 +1,5 @@
 import { useContext } from 'react';
 import { useRouter } from 'next/router';
-
 import {
   alpha,
   Box,
@@ -16,6 +15,7 @@ import PeopleAltTwoToneIcon from '@mui/icons-material/PeopleAltTwoTone';
 import PersonOutlineTwoToneIcon from '@mui/icons-material/PersonOutlineTwoTone';
 import DesignServicesTwoToneIcon from '@mui/icons-material/DesignServicesTwoTone';
 import DirectionsCarTwoToneIcon from '@mui/icons-material/DirectionsCarTwoTone';
+import CampingTwoToneIcon from '@mui/icons-material/HomeMaxTwoTone';
 import BarChartTwoToneIcon from '@mui/icons-material/BarChartTwoTone';
 import CommuteTwoToneIcon from '@mui/icons-material/CommuteTwoTone';
 
@@ -166,6 +166,7 @@ const menuOptions = [
   { name: "User Management", path: "/user-management", icon: <PeopleAltTwoToneIcon /> },
   { name: "Users", path: "/users", icon: <PersonOutlineTwoToneIcon /> },
   { name: "Projects", path: "/projects", icon: <DesignServicesTwoToneIcon /> },
+  { name: "Camp details", path: "/camp", icon: <CampingTwoToneIcon /> },
   { name: "Vehicle Management", path: "/vehicle", icon: <DirectionsCarTwoToneIcon /> },
   { name: "Reports & Analytics", path: "/reports", icon: <BarChartTwoToneIcon /> },
   { name: "Vehicle Trip Details", path: "/trip-details", icon: <CommuteTwoToneIcon /> },
