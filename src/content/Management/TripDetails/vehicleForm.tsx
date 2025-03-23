@@ -16,55 +16,91 @@ import {
   Button
 } from '@mui/material';
 
-const VehicleModals = ({ open, handleClose, editUser }) => {
-  const [gender, setGender] = useState('');
-  const [userData, setUserData] = useState({
+const VehicleModals = ({ open, handleClose, editTrip }) => {
+  const [tripData, setTripData] = useState({
     vehicleNumber: '',
+    tripType: '',
     driverName: '',
-    driverEmail: '',
-    driverMobileNumber: '',
-    employeeID: '',
-    insuranceClosingDate: '',
-    insuranceNumber: '',
-    address: ''
+    tripDate: '',
+    tripStatus: '',
+    startLocation: '',
+    startGPS: '',
+    startTime: '',
+    endLocation: '',
+    endGPS: '',
+    endTime: '',
+    totalDistance: '',
+    fuelRefillingAmount: '',
+    fuelRefillingLocation: '',
+    speedometerBefore: '',
+    speedometerAfter: '',
+    vehicleIssues: '',
+    issueDescription: '',
+    attachments: []
   });
 
-  // Populate form fields when editing a user
+  // Populate form fields when editing a trip
   useEffect(() => {
-    if (editUser) {
-      setUserData({
-        vehicleNumber: editUser.vehicleNumber || '',
-        driverName: editUser.driverName || '',
-        driverEmail: editUser.driverEmail || '',
-        driverMobileNumber: editUser.driverMobileNumber || '',
-        employeeID: editUser.employeeID || '',
-        insuranceClosingDate: editUser.insuranceClosingDate || '',
-        insuranceNumber: editUser.insuranceNumber || '',
-        address: editUser.address || ''
+    if (editTrip) {
+      setTripData({
+        vehicleNumber: editTrip.vehicleNumber || '',
+        tripType: editTrip.tripType || '',
+        driverName: editTrip.driverName || '',
+        tripDate: editTrip.tripDate || '',
+        tripStatus: editTrip.tripStatus || '',
+        startLocation: editTrip.startLocation || '',
+        startGPS: editTrip.startGPS || '',
+        startTime: editTrip.startTime || '',
+        endLocation: editTrip.endLocation || '',
+        endGPS: editTrip.endGPS || '',
+        endTime: editTrip.endTime || '',
+        totalDistance: editTrip.totalDistance || '',
+        fuelRefillingAmount: editTrip.fuelRefillingAmount || '',
+        fuelRefillingLocation: editTrip.fuelRefillingLocation || '',
+        speedometerBefore: editTrip.speedometerBefore || '',
+        speedometerAfter: editTrip.speedometerAfter || '',
+        vehicleIssues: editTrip.vehicleIssues || '',
+        issueDescription: editTrip.issueDescription || '',
+        attachments: editTrip.attachments || []
       });
-      setGender(editUser.gender || '');
     } else {
-      // Reset form for creating a new user
-      setUserData({
+      // Reset form for new trip entry
+      setTripData({
         vehicleNumber: '',
+        tripType: '',
         driverName: '',
-        driverEmail: '',
-        driverMobileNumber: '',
-        employeeID: '',
-        insuranceClosingDate: '',
-        insuranceNumber: '',
-        address: ''
+        tripDate: '',
+        tripStatus: '',
+        startLocation: '',
+        startGPS: '',
+        startTime: '',
+        endLocation: '',
+        endGPS: '',
+        endTime: '',
+        totalDistance: '',
+        fuelRefillingAmount: '',
+        fuelRefillingLocation: '',
+        speedometerBefore: '',
+        speedometerAfter: '',
+        vehicleIssues: '',
+        issueDescription: '',
+        attachments: []
       });
-      setGender('');
     }
-  }, [editUser]);
+  }, [editTrip]);
+
+  // Handle File Upload
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setTripData({ ...tripData, attachments: files });
+  };
 
   return (
     <Dialog onClose={handleClose} open={open}>
       <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title={editUser ? 'Edit Vehicle Details' : 'Add Vehicle Details'} />
+            <CardHeader title={editTrip ? 'Edit Trip Details' : 'Add Trip Details'} />
             <Divider />
             <CardContent>
               <Box component="form" noValidate autoComplete="off">
@@ -75,9 +111,22 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
                       label="Vehicle Number"
                       type="text"
                       fullWidth
-                      value={userData.vehicleNumber}
-                      onChange={(e) => setUserData({ ...userData, vehicleNumber: e.target.value })}
+                      value={tripData.vehicleNumber}
+                      onChange={(e) => setTripData({ ...tripData, vehicleNumber: e.target.value })}
                     />
+                  </Grid>
+
+                  {/* Trip Type */}
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Trip Type</InputLabel>
+                      <Select value={tripData.tripType} onChange={(e) => setTripData({ ...tripData, tripType: e.target.value })}>
+                        <MenuItem value="Camp Visit">Camp Visit</MenuItem>
+                        <MenuItem value="Supply Delivery">Supply Delivery</MenuItem>
+                        <MenuItem value="Emergency Response">Emergency Response</MenuItem>
+                        <MenuItem value="Other">Other</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   {/* Driver Name */}
@@ -86,96 +135,115 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
                       label="Driver Name"
                       type="text"
                       fullWidth
-                      value={userData.driverName}
-                      onChange={(e) => setUserData({ ...userData, driverName: e.target.value })}
+                      value={tripData.driverName}
+                      onChange={(e) => setTripData({ ...tripData, driverName: e.target.value })}
                     />
                   </Grid>
 
-                  {/* Driver Email */}
+                  {/* Trip Date */}
                   <Grid item xs={6}>
                     <TextField
-                      label="Driver Email"
-                      type="email"
-                      fullWidth
-                      value={userData.driverEmail}
-                      onChange={(e) => setUserData({ ...userData, driverEmail: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* Driver Mobile Number */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Driver Mobile Number"
-                      type="text"
-                      fullWidth
-                      value={userData.driverMobileNumber}
-                      onChange={(e) => setUserData({ ...userData, driverMobileNumber: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* Employee ID */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Emp ID"
-                      type="text"
-                      fullWidth
-                      value={userData.employeeID}
-                      onChange={(e) => setUserData({ ...userData, employeeID: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* Gender Dropdown */}
-                  <Grid item xs={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Gender</InputLabel>
-                      <Select value={gender} onChange={(e) => setGender(e.target.value)}>
-                        <MenuItem value="Male">Male</MenuItem>
-                        <MenuItem value="Female">Female</MenuItem>
-                        <MenuItem value="Other">Other</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  {/* Vehicle Insurance Closing Date */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Vehicle Insurance Closing Date"
+                      label="Trip Date"
                       type="date"
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      value={userData.insuranceClosingDate}
-                      onChange={(e) => setUserData({ ...userData, insuranceClosingDate: e.target.value })}
+                      value={tripData.tripDate}
+                      onChange={(e) => setTripData({ ...tripData, tripDate: e.target.value })}
                     />
                   </Grid>
 
-                  {/* Insurance Number */}
+                  {/* Start & End Location */}
                   <Grid item xs={6}>
                     <TextField
-                      label="Insurance Number"
+                      label="Start Location"
                       type="text"
                       fullWidth
-                      value={userData.insuranceNumber}
-                      onChange={(e) => setUserData({ ...userData, insuranceNumber: e.target.value })}
+                      value={tripData.startLocation}
+                      onChange={(e) => setTripData({ ...tripData, startLocation: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="End Location"
+                      type="text"
+                      fullWidth
+                      value={tripData.endLocation}
+                      onChange={(e) => setTripData({ ...tripData, endLocation: e.target.value })}
                     />
                   </Grid>
 
-                  {/* Address */}
-                  <Grid item xs={12}>
+                  {/* GPS Coordinates */}
+                  <Grid item xs={6}>
                     <TextField
-                      label="Address"
+                      label="Start GPS Coordinates"
                       type="text"
-                      multiline
-                      rows={4}
                       fullWidth
-                      value={userData.address}
-                      onChange={(e) => setUserData({ ...userData, address: e.target.value })}
+                      value={tripData.startGPS}
+                      onChange={(e) => setTripData({ ...tripData, startGPS: e.target.value })}
                     />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="End GPS Coordinates"
+                      type="text"
+                      fullWidth
+                      value={tripData.endGPS}
+                      onChange={(e) => setTripData({ ...tripData, endGPS: e.target.value })}
+                    />
+                  </Grid>
+
+                  {/* Speedometer Readings */}
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Speedometer Before Trip"
+                      type="number"
+                      fullWidth
+                      value={tripData.speedometerBefore}
+                      onChange={(e) => setTripData({ ...tripData, speedometerBefore: e.target.value })}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Speedometer After Trip"
+                      type="number"
+                      fullWidth
+                      value={tripData.speedometerAfter}
+                      onChange={(e) => setTripData({ ...tripData, speedometerAfter: e.target.value })}
+                    />
+                  </Grid>
+
+                  {/* Vehicle Issues */}
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Any Vehicle Issues?</InputLabel>
+                      <Select value={tripData.vehicleIssues} onChange={(e) => setTripData({ ...tripData, vehicleIssues: e.target.value })}>
+                        <MenuItem value="Yes">Yes</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Issue Description"
+                      type="text"
+                      fullWidth
+                      value={tripData.issueDescription}
+                      onChange={(e) => setTripData({ ...tripData, issueDescription: e.target.value })}
+                    />
+                  </Grid>
+
+                  {/* Attachments */}
+                  <Grid item xs={12}>
+                    <Button variant="outlined" component="label">
+                      Upload Attachments
+                      <input type="file" multiple hidden onChange={handleFileChange} />
+                    </Button>
                   </Grid>
 
                   {/* Submit Button */}
                   <Grid item xs={12} display="flex" justifyContent="flex-end">
                     <Button variant="contained" color="primary">
-                      {editUser ? 'Update' : 'Create'}
+                      {editTrip ? 'Update' : 'Create'}
                     </Button>
                   </Grid>
                 </Grid>

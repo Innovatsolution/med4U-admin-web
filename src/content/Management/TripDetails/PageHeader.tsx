@@ -2,7 +2,7 @@ import { Typography, Button, Grid } from '@mui/material';
 
 import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
-import UserModals from './vehicleForm';
+import VehicleModals from './vehicleForm';
 
 function PageHeader() {
   const [open, setOpen] = useState(false);
@@ -16,7 +16,7 @@ function PageHeader() {
     <Grid container justifyContent="space-between" alignItems="center">
       <Grid item>
         <Typography variant="h3" component="h3" gutterBottom>
-          Vehicle Management
+          Trip Management
         </Typography>
         {/* <Typography variant="subtitle2">
           {user.name}, these are your recent transactions
@@ -29,10 +29,10 @@ function PageHeader() {
           startIcon={<AddTwoToneIcon fontSize="small" />}
           onClick={()=>setOpen(true)}
         >
-          Create Vehicle
+          Create Trip
         </Button>
       </Grid>
-      <UserModals open={open} handleClose={handleClose} editUser={null}/>
+      <VehicleModals open={open} handleClose={handleClose} editTrip={null}/>
     </Grid>
   );
 }

@@ -1,0 +1,11 @@
+.Toastify__toast {
+    background: #1a1a2e !important; /* Dark background */
+    color: #ffffff !important; /* White text */
+  }
+  .Toastify__toast--success {
+    background: #4caf50 !important; /* Green success */
+  }
+  .Toastify__toast--error {
+    background: #f44336 !important; /* Red error */
+  }
+  

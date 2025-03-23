@@ -22,39 +22,49 @@ import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import VehicleModals from './vehicleForm';
 import DeleteVehicleModal from './DeleteConfirm';
 
-interface Vehicle {
+interface VehicleTrip {
   id: string;
   vehicleNumber: string;
+  tripType: string;
   driverName: string;
-  driverEmail: string;
-  driverMobileNumber: string;
-  employeeID: string;
-  gender: string;
-  insuranceClosingDate: string;
-  insuranceNumber: string;
-  address: string;
+  tripDate: string;
+  tripStatus: string;
+  startLocation: string;
+  startGPS: string;
+  startTime: string;
+  endLocation: string;
+  endGPS: string;
+  endTime: string;
+  totalDistance: number;
+  fuelRefillingAmount: number;
+  fuelRefillingLocation: string;
+  speedometerBefore: number;
+  speedometerAfter: number;
+  vehicleIssues: string;
+  issueDescription: string;
+  attachments: string[];
 }
 
-interface VehicleTableProps {
+interface VehicleTripTableProps {
   className?: string;
-  vehicles: Vehicle[];
+  trips: VehicleTrip[];
 }
 
-const applyPagination = (vehicles: Vehicle[], page: number, limit: number): Vehicle[] => {
-  return vehicles.slice(page * limit, page * limit + limit);
+const applyPagination = (trips: VehicleTrip[], page: number, limit: number): VehicleTrip[] => {
+  return trips.slice(page * limit, page * limit + limit);
 };
 
-const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
+const VehicleManagementTable: FC<VehicleTripTableProps> = ({ trips }) => {
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedTrip, setSelectedTrip] = useState<VehicleTrip | null>(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [tripToDelete, setTripToDelete] = useState<VehicleTrip | null>(null);
 
   // Open Delete Modal
-  const handleDeleteVehicle = (vehicle: Vehicle) => {
-    setVehicleToDelete(vehicle);
+  const handleDeleteTrip = (trip: VehicleTrip) => {
+    setTripToDelete(trip);
     setOpenDeleteModal(true);
   };
 
@@ -64,14 +74,14 @@ const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
   };
 
   // Confirm Delete
-  const handleConfirmDelete = (vehicleId: string) => {
-    console.log(vehicleId);
+  const handleConfirmDelete = (tripId: string) => {
+    console.log(tripId);
     setOpenDeleteModal(false);
   };
 
   // Open Edit Modal
-  const handleEditVehicle = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
+  const handleEditTrip = (trip: VehicleTrip) => {
+    setSelectedTrip(trip);
     setOpenModal(true);
   };
 
@@ -88,51 +98,51 @@ const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
     setLimit(parseInt(event.target.value));
   };
 
-  const paginatedVehicles = applyPagination(vehicles, page, limit);
+  const paginatedTrips = applyPagination(trips, page, limit);
 
   return (
     <Card>
-      <CardHeader title="Vehicle Management" />
+      <CardHeader title="Vehicle Trip Management" />
       <Divider />
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Vehicle Number</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Mobile</TableCell>
-              {/* <TableCell>Emp ID</TableCell> */}
-              {/* <TableCell>Gender</TableCell> */}
-              <TableCell>Insurance Closing Date</TableCell>
-              <TableCell>Insurance Number</TableCell>
-              {/* <TableCell>Address</TableCell> */}
+              <TableCell>Trip Type</TableCell>
+              <TableCell>Driver Name</TableCell>
+              <TableCell>Trip Date</TableCell>
+              <TableCell>Trip Status</TableCell>
+              <TableCell>Start Location</TableCell>
+              <TableCell>End Location</TableCell>
+              <TableCell>Total Distance (KM)</TableCell>
+              <TableCell>Fuel Refilling Amount</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedVehicles.map((vehicle) => (
-              <TableRow hover key={vehicle.id}>
-                <TableCell>{vehicle.vehicleNumber}</TableCell>
-                <TableCell>{vehicle.driverName}</TableCell>
-                <TableCell>{vehicle.driverEmail}</TableCell>
-                <TableCell>{vehicle.driverMobileNumber}</TableCell>
-                {/* <TableCell>{vehicle.employeeID}</TableCell> */}
-                {/* <TableCell>{vehicle.gender}</TableCell> */}
-                <TableCell>{format(new Date(vehicle.insuranceClosingDate), 'MMMM dd yyyy')}</TableCell>
-                <TableCell>{vehicle.insuranceNumber}</TableCell>
-                {/* <TableCell>{vehicle.address}</TableCell> */}
+            {paginatedTrips.map((trip) => (
+              <TableRow hover key={trip.id}>
+                <TableCell>{trip.vehicleNumber}</TableCell>
+                <TableCell>{trip.tripType}</TableCell>
+                <TableCell>{trip.driverName}</TableCell>
+                <TableCell>{format(new Date(trip.tripDate), 'MMMM dd yyyy')}</TableCell>
+                <TableCell>{trip.tripStatus}</TableCell>
+                <TableCell>{trip.startLocation}</TableCell>
+                <TableCell>{trip.endLocation}</TableCell>
+                <TableCell>{trip.totalDistance} KM</TableCell>
+                <TableCell>${trip.fuelRefillingAmount}</TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {/* Edit Button */}
-                    <Tooltip title="Edit Vehicle">
-                      <IconButton color="primary" onClick={() => handleEditVehicle(vehicle)}>
+                    <Tooltip title="Edit Trip">
+                      <IconButton color="primary" onClick={() => handleEditTrip(trip)}>
                         <EditTwoToneIcon />
                       </IconButton>
                     </Tooltip>
                     {/* Delete Button */}
-                    <Tooltip title="Delete Vehicle">
-                      <IconButton color="error" onClick={() => handleDeleteVehicle(vehicle)}>
+                    <Tooltip title="Delete Trip">
+                      <IconButton color="error" onClick={() => handleDeleteTrip(trip)}>
                         <DeleteTwoToneIcon />
                       </IconButton>
                     </Tooltip>
@@ -146,7 +156,7 @@ const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
       <Box p={2}>
         <TablePagination
           component="div"
-          count={vehicles.length}
+          count={trips.length}
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleLimitChange}
           page={page}
@@ -154,20 +164,20 @@ const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
           rowsPerPageOptions={[5, 10, 25, 30]}
         />
       </Box>
-      {/* Vehicle Modal */}
-      <VehicleModals open={openModal} handleClose={handleCloseModal} editUser={selectedVehicle} />
-      {/* Delete Vehicle Modal */}
-      <DeleteVehicleModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} vehicle={vehicleToDelete} />
+      {/* Vehicle Trip Modal */}
+      <VehicleModals open={openModal} handleClose={handleCloseModal} editTrip={selectedTrip} />
+      {/* Delete Vehicle Trip Modal */}
+      <DeleteVehicleModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} trip={tripToDelete} />
     </Card>
   );
 };
 
 VehicleManagementTable.propTypes = {
-  vehicles: PropTypes.array.isRequired
+  trips: PropTypes.array.isRequired
 };
 
 VehicleManagementTable.defaultProps = {
-  vehicles: []
+  trips: []
 };
 
 export default VehicleManagementTable;
