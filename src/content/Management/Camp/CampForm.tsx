@@ -140,7 +140,8 @@ const CampModal = ({ open, handleClose, editCamp }) => {
                       multiple
                       options={["Doctor A", "Doctor B", "Doctor C"]}
                       value={campData.assignedMedicalStaff}
-                      onChange={(event, newValue) => setCampData({ ...campData, assignedMedicalStaff: newValue })}
+                      onChange={(event, newValue) => {setCampData({ ...campData, assignedMedicalStaff: newValue
+                       }),console.log(event)}}
                       renderInput={(params) => <TextField {...params} label="Assigned Medical Staff" required fullWidth />}
                     />
                   </Grid>

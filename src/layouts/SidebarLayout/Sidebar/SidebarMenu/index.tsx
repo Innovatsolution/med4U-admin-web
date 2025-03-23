@@ -168,8 +168,8 @@ const menuOptions = [
   { name: "Projects", path: "/projects", icon: <DesignServicesTwoToneIcon /> },
   { name: "Camp details", path: "/camp", icon: <CampingTwoToneIcon /> },
   { name: "Vehicle Management", path: "/vehicle", icon: <DirectionsCarTwoToneIcon /> },
-  { name: "Reports & Analytics", path: "/reports", icon: <BarChartTwoToneIcon /> },
   { name: "Vehicle Trip Details", path: "/trip-details", icon: <CommuteTwoToneIcon /> },
+  { name: "Reports & Analytics", path: "/reports", icon: <BarChartTwoToneIcon /> },
 ];
 
 function SidebarMenu() {

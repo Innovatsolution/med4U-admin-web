@@ -16,8 +16,8 @@ import {
   import Head from 'next/head';
   
   import Logo from 'src/components/LogoSign';
-  import ToastNotification from '@/toast/ToastMessage';
-  import { toast } from 'react-toastify';
+
+import ToastMessage from "@/toast/ToastMessage";
   
   const HeaderWrapper = styled(Card)(
     ({ theme }) => `
@@ -51,23 +51,17 @@ import {
   function CreatePassword() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showToast, setShowToast] = useState(false);
+    const [toastData, setToastData] = useState({ message: "", type: "success" });
   
     const handleCreatePassword = () => {
       if (password !== confirmPassword) {
-        // showToast("Passwords do not match!", "error");
-        // toast"Passwords do not match!"(m, {
-        //     position: "top-right",
-        //     autoClose: 3000,
-        //     hideProgressBar: false,
-        //     closeOnClick: true,
-        //     pauseOnHover: true,
-        //     draggable: true,
-        //     theme: "dark",
-        //   });
-        // };
-        // alert("Passwords do not match!");
+        setToastData({ message: "Passwords do not match!", type: "error" });
+        setShowToast(true);
         return;
       }
+      setToastData({ message: "Password created successfully!", type: "success" });
+      setShowToast(true);
       console.log('Password created successfully:', password);
       // Redirect user to login or dashboard after success
     };
@@ -145,7 +139,7 @@ import {
             </Box>
           </LoginCard>
         {/* Toast Message */}
-        <ToastNotification />
+        <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
         </Container>
         
       </OverviewWrapper>
