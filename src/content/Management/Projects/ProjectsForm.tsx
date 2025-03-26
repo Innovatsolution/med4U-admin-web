@@ -1,7 +1,10 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
+  Box,
   Grid,
   Card,
   CardHeader,
@@ -16,34 +19,54 @@ import {
   Button
 } from '@mui/material';
 
+// ✅ Validation Schema using Yup
+const schema = yup.object().shape({
+  name: yup.string().required('Project Name is required'),
+  description: yup.string().required('Project Description is required'),
+  type: yup.string().required('Project Type is required'),
+  status: yup.string().required('Project Status is required'),
+  startDate: yup.date().required('Start Date is required'),
+  endDate: yup.date().nullable().min(yup.ref('startDate'), 'End date cannot be before start date'),
+  clientSponsor: yup.string().required('Client Sponsor is required'),
+  assignedManager: yup.string().required('Assigned Manager is required')
+});
+
 const ProjectModal = ({ open, handleClose, editProject }) => {
-  const [projectData, setProjectData] = useState({
-    name: '',
-    description: '',
-    type: '',
-    status: '',
-    startDate: '',
-    endDate: '',
-    clientSponsor: '',
-    assignedManager: ''
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    reset,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      description: '',
+      type: '',
+      status: '',
+      startDate: null,
+      endDate: null,
+      clientSponsor: '',
+      assignedManager: ''
+    }
   });
 
+  // Populate form when editing a project
   useEffect(() => {
     if (editProject) {
-      setProjectData({
-        name: editProject.name || '',
-        description: editProject.description || '',
-        type: editProject.type || '',
-        status: editProject.status || '',
-        startDate: editProject.startDate || '',
-        endDate: editProject.endDate || '',
-        clientSponsor: editProject.clientSponsor || '',
-        assignedManager: editProject.assignedManager || ''
-      });
+      Object.keys(editProject).forEach((key:any) => setValue(key, editProject[key] || ''));
     } else {
-      setProjectData({ name: '', description: '', type: '', status: '', startDate: '', endDate: '', clientSponsor: '', assignedManager: '' });
+      reset();
     }
-  }, [editProject]);
+  }, [editProject, setValue, reset]);
+
+  // Handle form submission
+  const onSubmit = (data) => {
+    console.log('Form Data:', data);
+    handleClose(); // Close modal after submission
+  };
 
   return (
     <Dialog onClose={handleClose} open={open}>
@@ -53,54 +76,111 @@ const ProjectModal = ({ open, handleClose, editProject }) => {
             <CardHeader title={editProject ? 'Edit Project' : 'Add Project'} />
             <Divider />
             <CardContent>
-              <Box component="form" noValidate autoComplete="off">
+              <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField label="Project Name" type="text" fullWidth required value={projectData.name} onChange={(e) => setProjectData({ ...projectData, name: e.target.value })} />
+                    <TextField
+                      label="Project Name"
+                      fullWidth
+                      {...register('name')}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                    />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField label="Project Description" type="text" fullWidth required multiline rows={4} value={projectData.description} onChange={(e) => setProjectData({ ...projectData, description: e.target.value })} />
+                    <TextField
+                      label="Project Description"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      {...register('description')}
+                      error={!!errors.description}
+                      helperText={errors.description?.message}
+                    />
                   </Grid>
                   <Grid item xs={6}>
-                    <FormControl fullWidth required>
+                    <FormControl fullWidth error={!!errors.type}>
                       <InputLabel>Project Type</InputLabel>
-                      <Select value={projectData.type} onChange={(e) => setProjectData({ ...projectData, type: e.target.value })}>
-                        <MenuItem value="Internal">Internal</MenuItem>
-                        <MenuItem value="Client">Client</MenuItem>
-                      </Select>
+                      <Controller
+                        name="type"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Internal">Internal</MenuItem>
+                            <MenuItem value="Client">Client</MenuItem>
+                          </Select>
+                        )}
+                      />
+                      {errors.type && <p style={{ color: 'red', fontSize: '12px' }}>{errors.type.message}</p>}
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
-                    <FormControl fullWidth required>
+                    <FormControl fullWidth error={!!errors.status}>
                       <InputLabel>Project Status</InputLabel>
-                      <Select value={projectData.status} onChange={(e) => setProjectData({ ...projectData, status: e.target.value })}>
-                        <MenuItem value="Pending">Pending</MenuItem>
-                        <MenuItem value="Ongoing">Ongoing</MenuItem>
-                        <MenuItem value="Completed">Completed</MenuItem>
-                      </Select>
+                      <Controller
+                        name="status"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Pending">Pending</MenuItem>
+                            <MenuItem value="Ongoing">Ongoing</MenuItem>
+                            <MenuItem value="Completed">Completed</MenuItem>
+                          </Select>
+                        )}
+                      />
+                      {errors.status && <p style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</p>}
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField label="Start Date" type="date" fullWidth required InputLabelProps={{ shrink: true }} value={projectData.startDate} onChange={(e) => setProjectData({ ...projectData, startDate: e.target.value })} />
+                    <TextField
+                      label="Start Date"
+                      type="date"
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      {...register('startDate')}
+                      error={!!errors.startDate}
+                      helperText={errors.startDate?.message}
+                    />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField label="End Date" type="date" fullWidth InputLabelProps={{ shrink: true }} value={projectData.endDate} onChange={(e) => setProjectData({ ...projectData, endDate: e.target.value })} />
+                    <TextField
+                      label="End Date"
+                      type="date"
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      {...register('endDate')}
+                      error={!!errors.endDate}
+                      helperText={errors.endDate?.message}
+                    />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField label="Client Sponsor Name" type="text" fullWidth value={projectData.clientSponsor} onChange={(e) => setProjectData({ ...projectData, clientSponsor: e.target.value })} />
+                    <TextField
+                      label="Client Sponsor Name"
+                      fullWidth
+                      {...register('clientSponsor')}
+                      error={!!errors.clientSponsor}
+                      helperText={errors.clientSponsor?.message}
+                    />
                   </Grid>
                   <Grid item xs={6}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.assignedManager}>
                       <InputLabel>Assigned Project Manager</InputLabel>
-                      <Select value={projectData.assignedManager} onChange={(e) => setProjectData({ ...projectData, assignedManager: e.target.value })}>
-                        <MenuItem value="Manager A">Manager A</MenuItem>
-                        <MenuItem value="Manager B">Manager B</MenuItem>
-                        <MenuItem value="Manager C">Manager C</MenuItem>
-                      </Select>
+                      <Controller
+                        name="assignedManager"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Manager A">Manager A</MenuItem>
+                            <MenuItem value="Manager B">Manager B</MenuItem>
+                            <MenuItem value="Manager C">Manager C</MenuItem>
+                          </Select>
+                        )}
+                      />
+                      {errors.assignedManager && <p style={{ color: 'red', fontSize: '12px' }}>{errors.assignedManager.message}</p>}
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} display="flex" justifyContent="flex-end">
-                    <Button variant="contained" color="primary">
+                    <Button variant="contained" color="primary" type="submit">
                       {editProject ? 'Update Project' : 'Create Project'}
                     </Button>
                   </Grid>

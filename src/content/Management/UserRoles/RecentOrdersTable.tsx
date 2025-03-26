@@ -21,7 +21,7 @@ import {
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import BulkActions from './BulkActions';
-import UserRoleCreateModals from './CreateRole';
+import UserRoleCreateModals from './userRoleForm';
 import DeleteRoleModal from './DeleteRoleModal';
 interface Role {
   id: string;

@@ -1,5 +1,8 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import Box from '@mui/material/Box';
 import {
   Grid,
@@ -16,174 +19,198 @@ import {
   Button
 } from '@mui/material';
 
+// Validation schema
+const validationSchema = yup.object().shape({
+  vehicleNumber: yup.string().required('Vehicle number is required'),
+  driverName: yup.string().required('Driver name is required'),
+  driverEmail: yup.string().email('Invalid email').required('Email is required'),
+  driverMobileNumber: yup
+    .string()
+    .matches(/^[0-9]{10}$/, 'Invalid phone number')
+    .required('Mobile number is required'),
+  employeeID: yup.string().required('Employee ID is required'),
+  gender: yup.string().required('Gender is required'),
+  insuranceClosingDate: yup.string().required('Insurance closing date is required'),
+  insuranceNumber: yup.string().required('Insurance number is required'),
+  address: yup.string().required('Address is required'),
+});
+
 const VehicleModals = ({ open, handleClose, editUser }) => {
-  const [gender, setGender] = useState('');
-  const [userData, setUserData] = useState({
-    vehicleNumber: '',
-    driverName: '',
-    driverEmail: '',
-    driverMobileNumber: '',
-    employeeID: '',
-    insuranceClosingDate: '',
-    insuranceNumber: '',
-    address: ''
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      vehicleNumber: '',
+      driverName: '',
+      driverEmail: '',
+      driverMobileNumber: '',
+      employeeID: '',
+      gender: '',
+      insuranceClosingDate: '',
+      insuranceNumber: '',
+      address: '',
+    },
   });
 
-  // Populate form fields when editing a user
   useEffect(() => {
     if (editUser) {
-      setUserData({
+      reset({
         vehicleNumber: editUser.vehicleNumber || '',
         driverName: editUser.driverName || '',
         driverEmail: editUser.driverEmail || '',
         driverMobileNumber: editUser.driverMobileNumber || '',
         employeeID: editUser.employeeID || '',
+        gender: editUser.gender || '',
         insuranceClosingDate: editUser.insuranceClosingDate || '',
         insuranceNumber: editUser.insuranceNumber || '',
-        address: editUser.address || ''
+        address: editUser.address || '',
       });
-      setGender(editUser.gender || '');
     } else {
-      // Reset form for creating a new user
-      setUserData({
-        vehicleNumber: '',
-        driverName: '',
-        driverEmail: '',
-        driverMobileNumber: '',
-        employeeID: '',
-        insuranceClosingDate: '',
-        insuranceNumber: '',
-        address: ''
-      });
-      setGender('');
+      reset();
     }
-  }, [editUser]);
+  }, [editUser, reset]);
+
+  const onSubmit = (data) => {
+    console.log('Form Submitted:', data);
+    handleClose();
+  };
 
   return (
     <Dialog onClose={handleClose} open={open}>
-      <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title={editUser ? 'Edit Vehicle Details' : 'Add Vehicle Details'} />
-            <Divider />
-            <CardContent>
-              <Box component="form" noValidate autoComplete="off">
-                <Grid container spacing={2}>
-                  {/* Vehicle Number */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Vehicle Number"
-                      type="text"
-                      fullWidth
-                      value={userData.vehicleNumber}
-                      onChange={(e) => setUserData({ ...userData, vehicleNumber: e.target.value })}
-                    />
-                  </Grid>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardHeader title={editUser ? 'Edit Vehicle Details' : 'Add Vehicle Details'} />
+              <Divider />
+              <CardContent>
+                <Box>
+                  <Grid container spacing={2}>
+                    {/* Vehicle Number */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="vehicleNumber"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Vehicle Number" fullWidth error={!!errors.vehicleNumber} helperText={errors.vehicleNumber?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Driver Name */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Driver Name"
-                      type="text"
-                      fullWidth
-                      value={userData.driverName}
-                      onChange={(e) => setUserData({ ...userData, driverName: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Driver Name */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="driverName"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Driver Name" fullWidth error={!!errors.driverName} helperText={errors.driverName?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Driver Email */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Driver Email"
-                      type="email"
-                      fullWidth
-                      value={userData.driverEmail}
-                      onChange={(e) => setUserData({ ...userData, driverEmail: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Driver Email */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="driverEmail"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Driver Email" type="email" fullWidth error={!!errors.driverEmail} helperText={errors.driverEmail?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Driver Mobile Number */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Driver Mobile Number"
-                      type="text"
-                      fullWidth
-                      value={userData.driverMobileNumber}
-                      onChange={(e) => setUserData({ ...userData, driverMobileNumber: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Driver Mobile Number */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="driverMobileNumber"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Driver Mobile Number" fullWidth error={!!errors.driverMobileNumber} helperText={errors.driverMobileNumber?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Employee ID */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Emp ID"
-                      type="text"
-                      fullWidth
-                      value={userData.employeeID}
-                      onChange={(e) => setUserData({ ...userData, employeeID: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Employee ID */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="employeeID"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Employee ID" fullWidth error={!!errors.employeeID} helperText={errors.employeeID?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Gender Dropdown */}
-                  <Grid item xs={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Gender</InputLabel>
-                      <Select value={gender} onChange={(e) => setGender(e.target.value)}>
-                        <MenuItem value="Male">Male</MenuItem>
-                        <MenuItem value="Female">Female</MenuItem>
-                        <MenuItem value="Other">Other</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                    {/* Gender Dropdown */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="gender"
+                        control={control}
+                        render={({ field }) => (
+                          <FormControl fullWidth error={!!errors.gender}>
+                            <InputLabel>Gender</InputLabel>
+                            <Select {...field} displayEmpty>
+                              <MenuItem value="">Select Gender</MenuItem>
+                              <MenuItem value="Male">Male</MenuItem>
+                              <MenuItem value="Female">Female</MenuItem>
+                              <MenuItem value="Other">Other</MenuItem>
+                            </Select>
+                            {errors.gender && <p style={{ color: 'red', margin: '4px 0 0 14px', fontSize: '0.75rem' }}>{errors.gender.message}</p>}
+                          </FormControl>
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Vehicle Insurance Closing Date */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Vehicle Insurance Closing Date"
-                      type="date"
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      value={userData.insuranceClosingDate}
-                      onChange={(e) => setUserData({ ...userData, insuranceClosingDate: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Vehicle Insurance Closing Date */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="insuranceClosingDate"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Vehicle Insurance Closing Date" type="date" fullWidth InputLabelProps={{ shrink: true }} error={!!errors.insuranceClosingDate} helperText={errors.insuranceClosingDate?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Insurance Number */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Insurance Number"
-                      type="text"
-                      fullWidth
-                      value={userData.insuranceNumber}
-                      onChange={(e) => setUserData({ ...userData, insuranceNumber: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Insurance Number */}
+                    <Grid item xs={6}>
+                      <Controller
+                        name="insuranceNumber"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Insurance Number" fullWidth error={!!errors.insuranceNumber} helperText={errors.insuranceNumber?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Address */}
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Address"
-                      type="text"
-                      multiline
-                      rows={4}
-                      fullWidth
-                      value={userData.address}
-                      onChange={(e) => setUserData({ ...userData, address: e.target.value })}
-                    />
-                  </Grid>
+                    {/* Address */}
+                    <Grid item xs={12}>
+                      <Controller
+                        name="address"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Address" multiline rows={4} fullWidth error={!!errors.address} helperText={errors.address?.message} />
+                        )}
+                      />
+                    </Grid>
 
-                  {/* Submit Button */}
-                  <Grid item xs={12} display="flex" justifyContent="flex-end">
-                    <Button variant="contained" color="primary">
-                      {editUser ? 'Update' : 'Create'}
-                    </Button>
+                    {/* Submit Button */}
+                    <Grid item xs={12} display="flex" justifyContent="flex-end">
+                      <Button type="submit" variant="contained" color="primary">
+                        {editUser ? 'Update' : 'Create'}
+                      </Button>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </Box>
-            </CardContent>
-          </Card>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </form>
     </Dialog>
   );
 };

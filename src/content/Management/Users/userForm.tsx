@@ -1,6 +1,8 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
+import { useForm, Controller } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Grid,
   Card,
@@ -19,144 +21,150 @@ import {
 } from '@mui/material';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
+const schema = yup.object().shape({
+  name: yup.string().required('Name is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  mobileNumber: yup
+  .string()
+  .matches(/^(?:\+91[-\s]?)?[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number (with or without +91)')
+  .required('Mobile Number is required'),
+  designation: yup.string().required('Designation is required'),
+  employeeID: yup.string().required('Employee ID is required'),
+  address: yup.string().required('Address is required'),
+  role: yup.string().required('Role is required'),
+  gender: yup.string().required('Gender is required')
+});
+
 const UserModals = ({ open, handleClose, editUser }) => {
-  const [role, setRole] = useState('');
-  const [gender, setGender] = useState('');
   const [profileImage, setProfileImage] = useState(null);
-  const [userData, setUserData] = useState({
-    name: '',
-    email: '',
-    mobileNumber: '',
-    designation: '',
-    employeeID: '',
-    address: ''
+  
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      email: '',
+      mobileNumber: '',
+      designation: '',
+      employeeID: '',
+      address: '',
+      role: '',
+      gender: ''
+    }
   });
 
-  // Populate form fields when editing a user
   useEffect(() => {
     if (editUser) {
-      setUserData({
+      reset({
         name: editUser.name || '',
         email: editUser.email || '',
         mobileNumber: editUser.mobileNumber || '',
         designation: editUser.designation || '',
         employeeID: editUser.employeeID || '',
-        address: editUser.address || ''
+        address: editUser.address || '',
+        role: editUser.role || '',
+        gender: editUser.gender || ''
       });
-      setRole(editUser.role || '');
-      setGender(editUser.gender || '');
       setProfileImage(editUser.profileImage || null);
     } else {
-      setUserData({ name: '', email: '', mobileNumber: '', designation: '', employeeID: '', address: '' });
-      setRole('');
-      setGender('');
+      reset();
       setProfileImage(null);
     }
-  }, [editUser]);
+  }, [editUser, reset]);
 
-  // Handle Profile Image Upload
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
-      };
+      reader.onloadend = () => setProfileImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
+  const onSubmit = (data) => {
+    console.log('Form Submitted:', data);
+  };
+
   return (
     <Dialog onClose={handleClose} open={open}>
-      <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title={editUser ? 'Edit User' : 'Add User'} />
-            <Divider />
-            <CardContent>
-              <Box component="form" noValidate autoComplete="off">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Grid container spacing={3} justifyContent="center">
+          <Grid item xs={12}>
+            <Card>
+              <CardHeader title={editUser ? 'Edit User' : 'Add User'} />
+              <Divider />
+              <CardContent>
                 <Grid container spacing={2}>
-                  
-                  {/* Profile Image Upload */}
                   <Grid item xs={12} display="flex" flexDirection="column" alignItems="center">
-                    <Avatar
-                      src={profileImage || '/default-profile.png'}
-                      sx={{ width: 100, height: 100, mb: 2 }}
-                    />
-                    <input
-                      accept="image/*"
-                      type="file"
-                      style={{ display: 'none' }}
-                      id="profile-upload"
-                      onChange={handleImageChange}
-                    />
+                    <Avatar src={profileImage || '/default-profile.png'} sx={{ width: 100, height: 100, mb: 2 }} />
+                    <input accept="image/*" type="file" id="profile-upload" style={{ display: 'none' }} onChange={handleImageChange} />
                     <label htmlFor="profile-upload">
                       <IconButton color="primary" component="span">
                         <PhotoCameraIcon />
                       </IconButton>
                     </label>
                   </Grid>
-
-                  {/* User Role */}
-                  <Grid item xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel>User Role</InputLabel>
-                      <Select value={role} onChange={(e) => setRole(e.target.value)}>
-                        <MenuItem value="Admin">Admin</MenuItem>
-                        <MenuItem value="User">User</MenuItem>
-                        <MenuItem value="Manager">Manager</MenuItem>
-                      </Select>
+                  {(['name', 'email', 'mobileNumber', 'designation', 'employeeID', 'address'] as const).map((field) => (
+                  <Grid item xs={field === 'address' ? 12 : 6} key={field}>
+                    <Controller
+                      name={field}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <TextField
+                          {...controllerField}
+                          label={field.charAt(0).toUpperCase() + field.slice(1)}
+                          fullWidth
+                          multiline={field === 'address'}
+                          rows={field === 'address' ? 4 : 1}
+                          error={!!errors[field]}
+                          helperText={errors[field]?.message}
+                        />
+                      )}
+                    />
+                  </Grid>
+                ))}
+                  <Grid item xs={6}>
+                    <FormControl fullWidth error={!!errors.role}>
+                      <InputLabel>Role</InputLabel>
+                      <Controller
+                        name="role"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Admin">Admin</MenuItem>
+                            <MenuItem value="User">User</MenuItem>
+                            <MenuItem value="Manager">Manager</MenuItem>
+                          </Select>
+                        )}
+                      />
                     </FormControl>
                   </Grid>
-
-                  {/* Two Fields Per Row */}
                   <Grid item xs={6}>
-                    <TextField label="Name" type="text" fullWidth value={userData.name} onChange={(e) => setUserData({ ...userData, name: e.target.value })} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField label="Email" type="text" fullWidth value={userData.email} onChange={(e) => setUserData({ ...userData, email: e.target.value })} />
-                  </Grid>
-
-                  <Grid item xs={6}>
-                    <TextField label="Mobile Number" type="text" fullWidth value={userData.mobileNumber} onChange={(e) => setUserData({ ...userData, mobileNumber: e.target.value })} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField label="Designation" type="text" fullWidth value={userData.designation} onChange={(e) => setUserData({ ...userData, designation: e.target.value })} />
-                  </Grid>
-
-                  <Grid item xs={6}>
-                    <TextField label="Emp ID" type="text" fullWidth value={userData.employeeID} onChange={(e) => setUserData({ ...userData, employeeID: e.target.value })} />
-                  </Grid>
-                  
-                  {/* Gender */}
-                  <Grid item xs={6}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.gender}>
                       <InputLabel>Gender</InputLabel>
-                      <Select value={gender} onChange={(e) => setGender(e.target.value)}>
-                        <MenuItem value="Male">Male</MenuItem>
-                        <MenuItem value="Female">Female</MenuItem>
-                        <MenuItem value="Other">Other</MenuItem>
-                      </Select>
+                      <Controller
+                        name="gender"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Male">Male</MenuItem>
+                            <MenuItem value="Female">Female</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </Select>
+                        )}
+                      />
                     </FormControl>
                   </Grid>
-
-                  {/* Address */}
-                  <Grid item xs={12}>
-                    <TextField label="Address" type="text" multiline rows={4} fullWidth value={userData.address} onChange={(e) => setUserData({ ...userData, address: e.target.value })} />
-                  </Grid>
-
-                  {/* Submit Button */}
                   <Grid item xs={12} display="flex" justifyContent="flex-end">
-                    <Button variant="contained" color="primary">
+                    <Button type="submit" variant="contained" color="primary">
                       {editUser ? 'Update' : 'Create'}
                     </Button>
                   </Grid>
                 </Grid>
-              </Box>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </form>
     </Dialog>
   );
 };
