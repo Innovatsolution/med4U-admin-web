@@ -15,9 +15,9 @@ import PeopleAltTwoToneIcon from '@mui/icons-material/PeopleAltTwoTone';
 import PersonOutlineTwoToneIcon from '@mui/icons-material/PersonOutlineTwoTone';
 import DesignServicesTwoToneIcon from '@mui/icons-material/DesignServicesTwoTone';
 import DirectionsCarTwoToneIcon from '@mui/icons-material/DirectionsCarTwoTone';
-import CampingTwoToneIcon from '@mui/icons-material/HomeMaxTwoTone';
 import BarChartTwoToneIcon from '@mui/icons-material/BarChartTwoTone';
 import CommuteTwoToneIcon from '@mui/icons-material/CommuteTwoTone';
+import { MedicalServicesOutlined } from '@mui/icons-material';
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -166,9 +166,10 @@ const menuOptions = [
   { name: "User Management", path: "/user-management", icon: <PeopleAltTwoToneIcon /> },
   { name: "Users", path: "/users", icon: <PersonOutlineTwoToneIcon /> },
   { name: "Projects", path: "/projects", icon: <DesignServicesTwoToneIcon /> },
-  { name: "Camp details", path: "/camp", icon: <CampingTwoToneIcon /> },
+  { name: "Camp details", path: "/camp", icon: <MedicalServicesOutlined /> },
   { name: "Vehicle Management", path: "/vehicle", icon: <DirectionsCarTwoToneIcon /> },
   { name: "Vehicle Trip Details", path: "/trip-details", icon: <CommuteTwoToneIcon /> },
+  { name: "Patient Details", path: "/patient-details", icon: <PersonOutlineTwoToneIcon /> },
   { name: "Reports & Analytics", path: "/reports", icon: <BarChartTwoToneIcon /> },
 ];
 
