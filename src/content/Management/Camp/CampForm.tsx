@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import Box from '@mui/material/Box';
 import {
   Grid, Card, CardHeader, CardContent, Divider, FormControl, InputLabel, Select,
-  MenuItem, Dialog, TextField, Button, Autocomplete
+  MenuItem, Dialog, TextField, Button, Autocomplete, FormHelperText
 } from '@mui/material';
 
 const validationSchema = yup.object().shape({
@@ -78,6 +78,7 @@ const CampModal = ({ open, handleClose, editCamp }) => {
                           <MenuItem value="Educational">Educational</MenuItem>
                           <MenuItem value="Relief">Relief</MenuItem>
                         </Select>
+                        <FormHelperText>{errors.type?.message}</FormHelperText>
                       </FormControl>
                     </Grid>
                     <Grid item xs={12}>
@@ -108,13 +109,14 @@ const CampModal = ({ open, handleClose, editCamp }) => {
                       <TextField label="GPS Longitude" fullWidth {...register('gpsLongitude')} error={!!errors.gpsLongitude} helperText={errors.gpsLongitude?.message} />
                     </Grid>
                     <Grid item xs={6}>
-                      <FormControl fullWidth required>
+                      <FormControl fullWidth error={!!errors.status}>
                         <InputLabel>Status</InputLabel>
                         <Select {...register('status')}>
                           <MenuItem value="Planned">Planned</MenuItem>
                           <MenuItem value="Ongoing">Ongoing</MenuItem>
                           <MenuItem value="Completed">Completed</MenuItem>
                         </Select>
+                        <FormHelperText>{errors.status?.message}</FormHelperText>
                       </FormControl>
                     </Grid>
                     <Grid item xs={6}>
@@ -124,6 +126,7 @@ const CampModal = ({ open, handleClose, editCamp }) => {
                           <MenuItem value="Manager A">Manager A</MenuItem>
                           <MenuItem value="Manager B">Manager B</MenuItem>
                         </Select>
+                        <FormHelperText>{errors.assignedManager?.message}</FormHelperText>
                       </FormControl>
                     </Grid>
                     <Grid item xs={12}>
@@ -142,22 +145,24 @@ const CampModal = ({ open, handleClose, editCamp }) => {
                       />
                     </Grid>
                     <Grid item xs={6}>
-                      <FormControl fullWidth>
+                      <FormControl fullWidth error={!!errors.driverName}>
                         <InputLabel>Driver Name</InputLabel>
                         <Select {...register('driverName')}>
                           <MenuItem value="Driver A">Driver A</MenuItem>
                           <MenuItem value="Driver B">Driver B</MenuItem>
                         </Select>
-                      </FormControl>
+                        <FormHelperText>{errors.driverName?.message}</FormHelperText>
+                        </FormControl>
                     </Grid>
                     <Grid item xs={6}>
-                      <FormControl fullWidth>
+                      <FormControl fullWidth error={!!errors.clientSponsor}>
                         <InputLabel>Client Sponsor</InputLabel>
                         <Select {...register('clientSponsor')}>
                           <MenuItem value="Sponsor A">Sponsor A</MenuItem>
                           <MenuItem value="Sponsor B">Sponsor B</MenuItem>
                         </Select>
-                      </FormControl>
+                        <FormHelperText>{errors.clientSponsor?.message}</FormHelperText>
+                        </FormControl>
                     </Grid>
                     <Grid item xs={12} display="flex" justifyContent="flex-end">
                       <Button variant="contained" color="primary" type="submit">Submit</Button>

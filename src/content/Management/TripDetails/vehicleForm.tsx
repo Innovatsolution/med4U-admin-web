@@ -1,6 +1,8 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
+import { useEffect, useState  } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
   Grid,
   Card,
@@ -13,249 +15,241 @@ import {
   MenuItem,
   Dialog,
   TextField,
-  Button
+  Button,
+  FormHelperText,
+  IconButton
 } from '@mui/material';
+import DeleteIcon from "@mui/icons-material/Delete";
+
+const schema = yup.object().shape({
+  vehicleNumber: yup.string().required('Vehicle Number is required'),
+  tripType: yup.string().required('Trip Type is required'),
+  driverName: yup.string().required('Driver Name is required'),
+  tripDate: yup.string().required('Trip Date is required'),
+  startLocation: yup.string().required('Start Location is required'),
+  endLocation: yup.string().required('End Location is required'),
+  startGPS: yup.string().required('Start GPS is required'),
+  endGPS: yup.string().required('End GPS is required'),
+  speedometerBefore: yup.number().typeError('Must be a number').required('Required'),
+  speedometerAfter: yup.number().typeError('Must be a number').required('Required'),
+  vehicleIssues: yup.string().required('Required'),
+  issueDescription: yup.string().when('vehicleIssues', (vehicleIssues, schema) => {
+    if (Array.isArray(vehicleIssues)) {
+      vehicleIssues = vehicleIssues[0]; // Extract the first value if it's an array
+    }
+    if (typeof vehicleIssues === 'string' && vehicleIssues === 'Yes') {
+      return schema.required('Please describe the issue');
+    }
+    return schema;
+  }), 
+  attachments: yup
+  .array()
+  .min(1, "At least one attachment is required") // ✅ At least one file is required
+  .test("fileSize", "Each file must be under 5MB", (files) =>
+    files.every((file) => file.size <= 5 * 1024 * 1024)
+  ),
+});
 
 const VehicleModals = ({ open, handleClose, editTrip }) => {
-  const [tripData, setTripData] = useState({
-    vehicleNumber: '',
-    tripType: '',
-    driverName: '',
-    tripDate: '',
-    tripStatus: '',
-    startLocation: '',
-    startGPS: '',
-    startTime: '',
-    endLocation: '',
-    endGPS: '',
-    endTime: '',
-    totalDistance: '',
-    fuelRefillingAmount: '',
-    fuelRefillingLocation: '',
-    speedometerBefore: '',
-    speedometerAfter: '',
-    vehicleIssues: '',
-    issueDescription: '',
-    attachments: []
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      vehicleNumber: '',
+      tripType: '',
+      driverName: '',
+      tripDate: '',
+      startLocation: '',
+      endLocation: '',
+      startGPS: '',
+      endGPS: '',
+      speedometerBefore: null,
+      speedometerAfter: null,
+      vehicleIssues: '',
+      issueDescription: '',
+      attachments: [],
+    },
   });
 
-  // Populate form fields when editing a trip
   useEffect(() => {
     if (editTrip) {
-      setTripData({
-        vehicleNumber: editTrip.vehicleNumber || '',
-        tripType: editTrip.tripType || '',
-        driverName: editTrip.driverName || '',
-        tripDate: editTrip.tripDate || '',
-        tripStatus: editTrip.tripStatus || '',
-        startLocation: editTrip.startLocation || '',
-        startGPS: editTrip.startGPS || '',
-        startTime: editTrip.startTime || '',
-        endLocation: editTrip.endLocation || '',
-        endGPS: editTrip.endGPS || '',
-        endTime: editTrip.endTime || '',
-        totalDistance: editTrip.totalDistance || '',
-        fuelRefillingAmount: editTrip.fuelRefillingAmount || '',
-        fuelRefillingLocation: editTrip.fuelRefillingLocation || '',
-        speedometerBefore: editTrip.speedometerBefore || '',
-        speedometerAfter: editTrip.speedometerAfter || '',
-        vehicleIssues: editTrip.vehicleIssues || '',
-        issueDescription: editTrip.issueDescription || '',
-        attachments: editTrip.attachments || []
-      });
-    } else {
-      // Reset form for new trip entry
-      setTripData({
-        vehicleNumber: '',
-        tripType: '',
-        driverName: '',
-        tripDate: '',
-        tripStatus: '',
-        startLocation: '',
-        startGPS: '',
-        startTime: '',
-        endLocation: '',
-        endGPS: '',
-        endTime: '',
-        totalDistance: '',
-        fuelRefillingAmount: '',
-        fuelRefillingLocation: '',
-        speedometerBefore: '',
-        speedometerAfter: '',
-        vehicleIssues: '',
-        issueDescription: '',
-        attachments: []
-      });
+      reset(editTrip);
     }
-  }, [editTrip]);
+  }, [editTrip, reset]);
 
-  // Handle File Upload
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
+  // ✅ Handle File Upload
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setTripData({ ...tripData, attachments: files });
+    if (files.length > 0) {
+      setSelectedFiles(files);
+      setValue("attachments", files, { shouldValidate: true }); // ✅ Triggers validation
+    }
+  };
+
+  // ✅ Handle File Removal
+  const handleFileRemove = (index) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setValue("attachments", newFiles, { shouldValidate: true }); // ✅ Triggers validation
+  };
+
+  const onSubmit = (data) => {
+    console.log('Form Data:', data);
   };
 
   return (
     <Dialog onClose={handleClose} open={open}>
-      <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title={editTrip ? 'Edit Trip Details' : 'Add Trip Details'} />
-            <Divider />
-            <CardContent>
-              <Box component="form" noValidate autoComplete="off">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardHeader title={editTrip ? 'Edit Trip Details' : 'Add Trip Details'} />
+              <Divider />
+              <CardContent>
                 <Grid container spacing={2}>
-                  {/* Vehicle Number */}
                   <Grid item xs={6}>
-                    <TextField
-                      label="Vehicle Number"
-                      type="text"
-                      fullWidth
-                      value={tripData.vehicleNumber}
-                      onChange={(e) => setTripData({ ...tripData, vehicleNumber: e.target.value })}
-                    />
+                    <TextField label="Vehicle Number" fullWidth {...register('vehicleNumber')} error={!!errors.vehicleNumber} helperText={errors.vehicleNumber?.message} />
                   </Grid>
-
-                  {/* Trip Type */}
                   <Grid item xs={6}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.tripType}>
                       <InputLabel>Trip Type</InputLabel>
-                      <Select value={tripData.tripType} onChange={(e) => setTripData({ ...tripData, tripType: e.target.value })}>
-                        <MenuItem value="Camp Visit">Camp Visit</MenuItem>
-                        <MenuItem value="Supply Delivery">Supply Delivery</MenuItem>
-                        <MenuItem value="Emergency Response">Emergency Response</MenuItem>
-                        <MenuItem value="Other">Other</MenuItem>
-                      </Select>
+                      <Controller
+                        name="tripType"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Camp Visit">Camp Visit</MenuItem>
+                            <MenuItem value="Supply Delivery">Supply Delivery</MenuItem>
+                            <MenuItem value="Emergency Response">Emergency Response</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </Select>
+                        )}
+                      />
+                      <FormHelperText>{errors.tripType?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
-
-                  {/* Driver Name */}
                   <Grid item xs={6}>
-                    <TextField
-                      label="Driver Name"
-                      type="text"
-                      fullWidth
-                      value={tripData.driverName}
-                      onChange={(e) => setTripData({ ...tripData, driverName: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* Trip Date */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Trip Date"
-                      type="date"
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      value={tripData.tripDate}
-                      onChange={(e) => setTripData({ ...tripData, tripDate: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* Start & End Location */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Start Location"
-                      type="text"
-                      fullWidth
-                      value={tripData.startLocation}
-                      onChange={(e) => setTripData({ ...tripData, startLocation: e.target.value })}
-                    />
+                    <TextField label="Driver Name" fullWidth {...register('driverName')} error={!!errors.driverName} helperText={errors.driverName?.message} />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="End Location"
-                      type="text"
-                      fullWidth
-                      value={tripData.endLocation}
-                      onChange={(e) => setTripData({ ...tripData, endLocation: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* GPS Coordinates */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Start GPS Coordinates"
-                      type="text"
-                      fullWidth
-                      value={tripData.startGPS}
-                      onChange={(e) => setTripData({ ...tripData, startGPS: e.target.value })}
-                    />
+                    <TextField label="Trip Date" type="date" fullWidth InputLabelProps={{ shrink: true }} {...register('tripDate')} error={!!errors.tripDate} helperText={errors.tripDate?.message} />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="End GPS Coordinates"
-                      type="text"
-                      fullWidth
-                      value={tripData.endGPS}
-                      onChange={(e) => setTripData({ ...tripData, endGPS: e.target.value })}
-                    />
-                  </Grid>
-
-                  {/* Speedometer Readings */}
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Speedometer Before Trip"
-                      type="number"
-                      fullWidth
-                      value={tripData.speedometerBefore}
-                      onChange={(e) => setTripData({ ...tripData, speedometerBefore: e.target.value })}
-                    />
+                    <TextField label="Start Location" fullWidth {...register('startLocation')} error={!!errors.startLocation} helperText={errors.startLocation?.message} />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="Speedometer After Trip"
-                      type="number"
-                      fullWidth
-                      value={tripData.speedometerAfter}
-                      onChange={(e) => setTripData({ ...tripData, speedometerAfter: e.target.value })}
-                    />
+                    <TextField label="End Location" fullWidth {...register('endLocation')} error={!!errors.endLocation} helperText={errors.endLocation?.message} />
                   </Grid>
-
-                  {/* Vehicle Issues */}
                   <Grid item xs={6}>
-                    <FormControl fullWidth>
+                    <TextField label="Start GPS Coordinates" fullWidth {...register('startGPS')} error={!!errors.startGPS} helperText={errors.startGPS?.message} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField label="End GPS Coordinates" fullWidth {...register('endGPS')} error={!!errors.endGPS} helperText={errors.endGPS?.message} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField label="Speedometer Before Trip" type="number" fullWidth {...register('speedometerBefore')} error={!!errors.speedometerBefore} helperText={errors.speedometerBefore?.message} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField label="Speedometer After Trip" type="number" fullWidth {...register('speedometerAfter')} error={!!errors.speedometerAfter} helperText={errors.speedometerAfter?.message} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth error={!!errors.vehicleIssues}>
                       <InputLabel>Any Vehicle Issues?</InputLabel>
-                      <Select value={tripData.vehicleIssues} onChange={(e) => setTripData({ ...tripData, vehicleIssues: e.target.value })}>
-                        <MenuItem value="Yes">Yes</MenuItem>
-                        <MenuItem value="No">No</MenuItem>
-                      </Select>
+                      <Controller
+                        name="vehicleIssues"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field}>
+                            <MenuItem value="Yes">Yes</MenuItem>
+                            <MenuItem value="No">No</MenuItem>
+                          </Select>
+                        )}
+                      />
+                      <FormHelperText>{errors.vehicleIssues?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="Issue Description"
-                      type="text"
-                      fullWidth
-                      value={tripData.issueDescription}
-                      onChange={(e) => setTripData({ ...tripData, issueDescription: e.target.value })}
-                    />
+                    <TextField label="Issue Description" fullWidth {...register('issueDescription')} error={!!errors.issueDescription} helperText={errors.issueDescription?.message} />
                   </Grid>
-
-                  {/* Attachments */}
+                  
+                  
+                  {/* File Upload */}
                   <Grid item xs={12}>
                     <Button variant="outlined" component="label">
                       Upload Attachments
-                      <input type="file" multiple hidden onChange={handleFileChange} />
+                      <input
+                        type="file"
+                        multiple
+                        hidden
+                        accept="image/*,application/pdf"
+                        onChange={handleFileChange}
+                      />
                     </Button>
+                    {errors.attachments && (
+                      <p style={{ color: "#FF1943", fontWeight: 700 }}>{errors.attachments.message}</p>
+                    )}
                   </Grid>
 
-                  {/* Submit Button */}
+                  {/* Show Uploaded Images */}
+                  {selectedFiles.length > 0 && (
+                    <Grid item xs={12}>
+                      <h4>Uploaded Files</h4>
+                      <Grid container spacing={2}>
+                        {selectedFiles.map((file, index) => (
+                          <Grid item key={index}>
+                            <div style={{ position: "relative", display: "inline-block" }}>
+                              {file.type.startsWith("image/") ? (
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`uploaded-${index}`}
+                                  width={80}
+                                  height={80}
+                                  style={{ borderRadius: 8, objectFit: "cover" }}
+                                />
+                              ) : (
+                                <p>{file.name}</p> // Show filename if not an image
+                              )}
+                              {/* Delete Button */}
+                              <IconButton
+                                onClick={() => handleFileRemove(index)}
+                                style={{
+                                  position: "absolute",
+                                  top: -8,
+                                  right: -8,
+                                  background: "red",
+                                  color: "white"
+                                }}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </div>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Grid>
+                  )}
                   <Grid item xs={12} display="flex" justifyContent="flex-end">
-                    <Button variant="contained" color="primary">
+                    <Button type="submit" variant="contained" color="primary">
                       {editTrip ? 'Update' : 'Create'}
                     </Button>
                   </Grid>
                 </Grid>
-              </Box>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </form>
     </Dialog>
   );
 };
 
 VehicleModals.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
-
 export default VehicleModals;

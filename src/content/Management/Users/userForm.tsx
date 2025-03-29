@@ -17,7 +17,8 @@ import {
   TextField,
   Button,
   Avatar,
-  IconButton
+  IconButton,
+  FormHelperText
 } from '@mui/material';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
@@ -136,6 +137,7 @@ const UserModals = ({ open, handleClose, editUser }) => {
                           </Select>
                         )}
                       />
+                      <FormHelperText>{errors.role?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
@@ -152,6 +154,7 @@ const UserModals = ({ open, handleClose, editUser }) => {
                           </Select>
                         )}
                       />
+                      <FormHelperText>{errors.gender?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} display="flex" justifyContent="flex-end">

@@ -16,7 +16,8 @@ import {
   MenuItem,
   Dialog,
   TextField,
-  Button
+  Button,
+  FormHelperText
 } from '@mui/material';
 
 // ✅ Validation Schema using Yup
@@ -26,7 +27,7 @@ const schema = yup.object().shape({
   type: yup.string().required('Project Type is required'),
   status: yup.string().required('Project Status is required'),
   startDate: yup.date().required('Start Date is required'),
-  endDate: yup.date().nullable().min(yup.ref('startDate'), 'End date cannot be before start date'),
+  endDate: yup.date().required('End Date is required').min(yup.ref('startDate'), 'End date cannot be before start date'),
   clientSponsor: yup.string().required('Client Sponsor is required'),
   assignedManager: yup.string().required('Assigned Manager is required')
 });
@@ -111,7 +112,7 @@ const ProjectModal = ({ open, handleClose, editProject }) => {
                           </Select>
                         )}
                       />
-                      {errors.type && <p style={{ color: 'red', fontSize: '12px' }}>{errors.type.message}</p>}
+                      <FormHelperText>{errors.type?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
@@ -128,7 +129,7 @@ const ProjectModal = ({ open, handleClose, editProject }) => {
                           </Select>
                         )}
                       />
-                      {errors.status && <p style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</p>}
+                      <FormHelperText>{errors.status?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
@@ -176,7 +177,7 @@ const ProjectModal = ({ open, handleClose, editProject }) => {
                           </Select>
                         )}
                       />
-                      {errors.assignedManager && <p style={{ color: 'red', fontSize: '12px' }}>{errors.assignedManager.message}</p>}
+                      <FormHelperText>{errors.assignedManager?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} display="flex" justifyContent="flex-end">

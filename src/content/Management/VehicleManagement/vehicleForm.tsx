@@ -16,7 +16,8 @@ import {
   MenuItem,
   Dialog,
   TextField,
-  Button
+  Button,
+  FormHelperText
 } from '@mui/material';
 
 // Validation schema
@@ -26,8 +27,8 @@ const validationSchema = yup.object().shape({
   driverEmail: yup.string().email('Invalid email').required('Email is required'),
   driverMobileNumber: yup
     .string()
-    .matches(/^[0-9]{10}$/, 'Invalid phone number')
-    .required('Mobile number is required'),
+    .required('Mobile number is required')
+    .matches(/^[0-9]{10}$/, 'Invalid phone number'),
   employeeID: yup.string().required('Employee ID is required'),
   gender: yup.string().required('Gender is required'),
   insuranceClosingDate: yup.string().required('Insurance closing date is required'),
@@ -47,7 +48,7 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
       vehicleNumber: '',
       driverName: '',
       driverEmail: '',
-      driverMobileNumber: '',
+      driverMobileNumber: null,
       employeeID: '',
       gender: '',
       insuranceClosingDate: '',
@@ -62,7 +63,7 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
         vehicleNumber: editUser.vehicleNumber || '',
         driverName: editUser.driverName || '',
         driverEmail: editUser.driverEmail || '',
-        driverMobileNumber: editUser.driverMobileNumber || '',
+        driverMobileNumber: editUser.driverMobileNumber || null,
         employeeID: editUser.employeeID || '',
         gender: editUser.gender || '',
         insuranceClosingDate: editUser.insuranceClosingDate || '',
@@ -154,12 +155,12 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
                           <FormControl fullWidth error={!!errors.gender}>
                             <InputLabel>Gender</InputLabel>
                             <Select {...field} displayEmpty>
-                              <MenuItem value="">Select Gender</MenuItem>
+                              {/* <MenuItem value="">Select Gender</MenuItem> */}
                               <MenuItem value="Male">Male</MenuItem>
                               <MenuItem value="Female">Female</MenuItem>
                               <MenuItem value="Other">Other</MenuItem>
                             </Select>
-                            {errors.gender && <p style={{ color: 'red', margin: '4px 0 0 14px', fontSize: '0.75rem' }}>{errors.gender.message}</p>}
+                            <FormHelperText>{errors.gender?.message}</FormHelperText>                      
                           </FormControl>
                         )}
                       />
