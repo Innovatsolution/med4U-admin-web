@@ -2,8 +2,6 @@ import * as React from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import createEmotionServer from '@emotion/server/create-instance';
 import createEmotionCache from 'src/createEmotionCache';
-import { Provider } from 'react-redux';
-import store from '@/toolkit/Store';
 
 export default class MyDocument extends Document {
   render() {
@@ -18,10 +16,8 @@ export default class MyDocument extends Document {
           />
         </Head>
         <body>
-        <Provider store={store}> 
           <Main />
           <NextScript />
-      </Provider>
         </body>
       </Html>
     );
