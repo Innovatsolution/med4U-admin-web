@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import UserRoleCreateModals from "./userRoleForm";
 
-function PageHeader() {
+function PageHeader({ onRefresh }) {
   const [modalOpen, setMadalOpen] = useState(false);
   const handleModalClose = () => {
     setMadalOpen(false);
@@ -25,7 +25,11 @@ function PageHeader() {
         >
           Create Roles
         </Button>
-        <UserRoleCreateModals open={modalOpen} handleModalClose={handleModalClose}/>
+        <UserRoleCreateModals 
+          open={modalOpen} 
+          handleModalClose={handleModalClose} 
+          onSuccess={onRefresh} // ✅ Pass refresh callback
+        />
       </Grid>
     </Grid>
   );

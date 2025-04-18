@@ -8,7 +8,6 @@ import {
     CardContent,
     Divider,
     Dialog,
-    TextField,
     Button,
     Typography,
     FormControlLabel,
@@ -16,6 +15,7 @@ import {
     Switch,
     styled
 } from '@mui/material';
+import { Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
@@ -33,6 +33,14 @@ import DesignServicesTwoToneIcon from '@mui/icons-material/DesignServicesTwoTone
 import DirectionsCarTwoToneIcon from '@mui/icons-material/DirectionsCarTwoTone';
 import BarChartTwoToneIcon from '@mui/icons-material/BarChartTwoTone';
 import CommuteTwoToneIcon from '@mui/icons-material/CommuteTwoTone';
+import { postRequest } from '@/services/api';
+
+const userRole: Record<string, number> = {
+  admin: 1,
+  client: 2,
+  serviceman: 3,
+  auditor: 4,
+};
 
 // Styled Timeline Wrapper
 const TimelineWrapper = styled(Timeline)(
@@ -65,7 +73,7 @@ const PermissionOptions = [
 
 // Validation Schema using Yup
 const schema = yup.object().shape({
-  roleName: yup.string().required('Role name is required').min(3, 'Must be at least 3 characters'),
+  roleName: yup.string().required('Role name is required'),
   permissions: yup
     .array()
     .test('at-least-one', 'At least one permission must be enabled', (value) =>
@@ -93,8 +101,52 @@ const UserRoleCreateModals = (props) => {
     }
   }, [props.editRole, setValue]);
 
-  const onSubmit = (data) => {
-    console.log('Form Submitted:', data);
+
+  const formatPermissions = (permissions) => {
+    const permissionKeys = [
+      'dashboard',
+      'userrole',
+      'users',
+      'projects',
+      'camp_details',
+      'vehicle_management',
+      'trip_details',
+      'patient_details',
+      'reports',
+    ];
+  
+    const formatted = {};
+  
+    permissionKeys.forEach((key, index) => {
+      const perm = permissions[index] || {};
+      formatted[key] = {
+        create: perm.add ? 1 : 0,
+        read: perm.list ? 1 : 0,
+        edit: perm.edit ? 1 : 0,
+        delete: perm.delete ? 1 : 0,
+      };
+    });
+  
+    return formatted;
+  };
+  const onSubmit = async (data) => {
+    const payload = {
+      role: data.roleName,
+      permission: formatPermissions(data.permissions),
+    };
+  
+    try {
+      const response = await postRequest('/user-role', payload); // Adjust according to your request method
+      console.log('Success:', response.data);
+  
+      // Optional: Close modal and refresh roles list
+      props.handleModalClose();
+
+      // ✅ Tell parent to refresh table
+      props.onSuccess?.();
+    } catch (error) {
+      console.error('API Error:', error.response?.data || error.message);
+    }
   };
 
   return (
@@ -109,20 +161,33 @@ const UserRoleCreateModals = (props) => {
                 <Grid container spacing={2}>
                   {/* Role Name Field */}
                   <Grid item xs={12}>
-                    <Controller
-                      name="roleName"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
+                  <Controller
+                    name="roleName"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.roleName}>
+                        <InputLabel id="role-select-label">Role</InputLabel>
+                        <Select
                           {...field}
+                          labelId="role-select-label"
                           label="Role"
-                          type="text"
-                          fullWidth
-                          error={!!errors.roleName}
-                          helperText={errors.roleName?.message}
-                        />
-                      )}
-                    />
+                          value={field.value}
+                          onChange={field.onChange}
+                        >
+                          {Object.entries(userRole).map(([key, value]) => (
+                            <MenuItem key={value} value={value}>
+                              {key.charAt(0).toUpperCase() + key.slice(1)}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {errors.roleName && (
+                          <Typography variant="body2" color="error">
+                            {errors.roleName.message}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    )}
+                  />
                   </Grid>
 
                   {/* Permissions Section */}

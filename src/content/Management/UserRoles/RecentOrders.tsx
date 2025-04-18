@@ -11,7 +11,7 @@ const userRole: Record<string, number> = {
   auditor: 4,
 };
 
-function RecentOrders() {
+function RecentOrders({reload}) {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +23,7 @@ function RecentOrders() {
         // Add roleName to each role object
         const updatedRoles = (data || []).map((roleObj: any) => {
           const roleName = Object.keys(userRole).find(
-            key => userRole[key] === roleObj.role
+            key => userRole[key] == roleObj.role
           );
           return {
             ...roleObj,
@@ -40,7 +40,7 @@ function RecentOrders() {
     };
 
     fetchRoles();
-  }, []);
+  }, [reload]);
 
   return (
     <Card>

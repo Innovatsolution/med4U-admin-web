@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// Base URL
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://med4u-api.onrender.com/api';
+// const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://med4u-api.onrender.com/api';
+// const baseURL = 'https://med4u-api.onrender.com/api';
+const baseURL = 'http://localhost:5000/api';
+console.log(baseURL);
 
 // Axios instance
 const axiosClient = axios.create({
