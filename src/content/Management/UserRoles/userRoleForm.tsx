@@ -34,6 +34,7 @@ import DirectionsCarTwoToneIcon from '@mui/icons-material/DirectionsCarTwoTone';
 import BarChartTwoToneIcon from '@mui/icons-material/BarChartTwoTone';
 import CommuteTwoToneIcon from '@mui/icons-material/CommuteTwoTone';
 import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
 
 const userRole: Record<string, number> = {
   admin: 1,
@@ -73,7 +74,7 @@ const PermissionOptions = [
 
 // Validation Schema using Yup
 const schema = yup.object().shape({
-  roleName: yup.string().required('Role name is required'),
+  roleName: yup.number().required('Role name is required'),
   permissions: yup
     .array()
     .test('at-least-one', 'At least one permission must be enabled', (value) =>
@@ -82,25 +83,51 @@ const schema = yup.object().shape({
 });
 
 const UserRoleCreateModals = (props) => {
+
+  console.log(props.editRole);
+  
   const {
     control,
     handleSubmit,
-    setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      roleName: props.editRole?.name || '',
+      roleName: props.editRole?.role || '',
       permissions: PermissionOptions.map(() => ({ list: false, add: false, edit: false, delete: false })),
     },
   });
 
+  // useEffect(() => {
+  //   if (props.editRole) {
+  //     setValue('roleName', props.editRole.role || '');
+  //   }
+  // }, [props.editRole, setValue]);
   useEffect(() => {
     if (props.editRole) {
-      setValue('roleName', props.editRole.name || '');
+      const roleNameValue = Object.entries(userRole).find(
+        ([, value]) => value === props.editRole.role
+      )?.[1];
+  
+      // Map back the permissions to match the form
+      const formPermissions = PermissionOptions.map((_, index) => {
+        const key = Object.keys(props.editRole.permission || {})[index];
+        const perm = props.editRole.permission?.[key] || {};
+        return {
+          list: perm.read === 1,
+          add: perm.create === 1,
+          edit: perm.edit === 1,
+          delete: perm.delete === 1,
+        };
+      });
+  
+      reset({
+        roleName: roleNameValue,
+        permissions: formPermissions,
+      });
     }
-  }, [props.editRole, setValue]);
-
+  }, [props.editRole, reset]);
 
   const formatPermissions = (permissions) => {
     const permissionKeys = [
@@ -136,8 +163,15 @@ const UserRoleCreateModals = (props) => {
     };
   
     try {
-      const response = await postRequest('/user-role', payload); // Adjust according to your request method
-      console.log('Success:', response.data);
+      if (props.editRole) {
+        // ✏️ Edit Mode
+        const response = await putRequest(`/user-role/${props.editRole.id}`, payload); // Use the correct ID
+        console.log('Updated:', response.data);
+      } else {
+        // 🆕 Create Mode
+        const response = await postRequest('/user-role', payload);
+        console.log('Created:', response.data);
+      }
   
       // Optional: Close modal and refresh roles list
       props.handleModalClose();

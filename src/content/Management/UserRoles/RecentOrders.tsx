@@ -15,22 +15,22 @@ function RecentOrders({reload}) {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    // ⬇️ Define fetchRoles once
     const fetchRoles = async () => {
+      setLoading(true); // Optional: show loader during refresh
       try {
         const data = await getRequest('/user-role');
-
-        // Add roleName to each role object
+  
         const updatedRoles = (data || []).map((roleObj: any) => {
           const roleName = Object.keys(userRole).find(
-            key => userRole[key] == roleObj.role
+            key => userRole[key] === roleObj.role
           );
           return {
             ...roleObj,
             roleName: roleName || 'Unknown',
           };
         });
-
+  
         setRoles(updatedRoles);
       } catch (error) {
         console.error('Error fetching user roles:', error);
@@ -39,9 +39,15 @@ function RecentOrders({reload}) {
       }
     };
 
+ // ⬇️ Fetch when `reload` prop changes
+  useEffect(() => {
     fetchRoles();
   }, [reload]);
 
+   // ⬇️ Manual refresh (e.g., after a delete inside the table)
+   const handleRefresh = () => {
+    fetchRoles(); // 🔄 manually re-fetch
+  };
   return (
     <Card>
       {loading ? (
@@ -50,7 +56,7 @@ function RecentOrders({reload}) {
           <Typography variant="body2" sx={{ mt: 2 }}>Loading roles...</Typography>
         </div>
       ) : (
-        <RoleManagementTable roles={roles} />
+        <RoleManagementTable roles={roles} onRefresh={handleRefresh} />
       )}
     </Card>
   );

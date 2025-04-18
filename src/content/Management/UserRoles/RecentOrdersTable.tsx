@@ -23,6 +23,8 @@ import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import BulkActions from './BulkActions';
 import UserRoleCreateModals from './userRoleForm';
 import DeleteRoleModal from './DeleteRoleModal';
+import { deleteRequest } from '@/services/api';
+
 interface Role {
   id: string;
   roleName: string;
@@ -31,13 +33,14 @@ interface Role {
 interface RoleManagementTableProps {
   className?: string;
   roles: Role[];
+  onRefresh: any;
 }
 
 const applyPagination = (roles: Role[], page: number, limit: number): Role[] => {
   return roles.slice(page * limit, page * limit + limit);
 };
 
-const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles }) => {
+const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh }) => {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const selectedBulkActions = selectedRoles.length > 0;
   const [page, setPage] = useState<number>(0);
@@ -76,8 +79,11 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles }) => {
     setOpenDeleteModal(true);
   };
 
-  const handleDelete = ()=>{
-
+  const handleDelete = async ()=>{
+      // Delete data
+        const response = await deleteRequest(`/user-role/${selectedRole.id}`); // Use the correct ID
+        console.log('delete:', response.data);
+        onRefresh?.();
   }
 
   const handleSave = ()=>{
@@ -184,6 +190,7 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles }) => {
         handleModalClose={() => setOpenEditModal(false)}
         editRole={selectedRole}
         handleSave={handleSave}
+        onSuccess={onRefresh} // ✅ Pass refresh callback
       />
 
       {/* Delete Role Modal */}
