@@ -20,7 +20,7 @@ const ToastMessage = ({ show, setShow, toastData }: any) => {
         sx={{
           width: "100%",
           color: "#fff", // White text
-          bgcolor: toastData.type === "success" ? "#2e7d32" : "#d32f2f", // Darker green for success, darker red for error
+          bgcolor: toastData.type === "success" ? "#2e7d32" : toastData.type === "warning" ? "#f4a836" : "#d32f2f", // Darker green for success, darker red for error
           fontWeight: "bold",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)", // Soft shadow
         }}

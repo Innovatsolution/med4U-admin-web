@@ -80,7 +80,7 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh })
   };
 
   const handleDelete = async ()=>{
-      // Delete data
+        // Delete data
         const response = await deleteRequest(`/user-role/${selectedRole.id}`); // Use the correct ID
         console.log('delete:', response.data);
         onRefresh?.();

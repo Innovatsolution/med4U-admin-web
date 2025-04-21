@@ -21,72 +21,163 @@ import {
   FormHelperText
 } from '@mui/material';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
+import { getRequest } from '@/services/api';
+import ToastMessage from "../../../toast/ToastMessage";
+
+const userRole: Record<string, number> = {
+  admin: 1,
+  client: 2,
+  serviceman: 3,
+  auditor: 4,
+};
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
-  mobileNumber: yup
+  mobile_number: yup
   .string()
   .matches(/^(?:\+91[-\s]?)?[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number (with or without +91)')
   .required('Mobile Number is required'),
   designation: yup.string().required('Designation is required'),
-  employeeID: yup.string().required('Employee ID is required'),
+  emp_id: yup.string().required('Employee ID is required'),
   address: yup.string().required('Address is required'),
   role: yup.string().required('Role is required'),
-  gender: yup.string().required('Gender is required')
+  gender: yup.string().required('Gender is required'),
+  profilePicture: yup.string().required('Profile picture is required'),
 });
 
-const UserModals = ({ open, handleClose, editUser }) => {
+const UserModals = ({ open, handleClose, editUser, onSuccess }) => {
   const [profileImage, setProfileImage] = useState(null);
-  
-  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState({
+    type: "success", // or "error", "info", etc.
+    message: "",
+  });
+  const [roles, setRoles] = useState([]);
+  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
       email: '',
-      mobileNumber: '',
+      mobile_number: '',
       designation: '',
-      employeeID: '',
+      emp_id: '',
       address: '',
       role: '',
-      gender: ''
+      gender: '',
+      profilePicture: ''
     }
   });
 
   useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const data = await getRequest('/user-role');
+        
+        const updatedRoles = (data || []).map((roleObj: any) => {
+          const roleName = Object.keys(userRole).find(
+            key => userRole[key] === roleObj.role
+          );
+          return {
+            ...roleObj,
+            roleName: roleName || 'Unknown',
+          };
+        });
+  
+        setRoles(updatedRoles);
+      } catch (error) {
+        console.error('Failed to fetch roles:', error);
+      }
+    };
     if (editUser) {
       reset({
         name: editUser.name || '',
         email: editUser.email || '',
-        mobileNumber: editUser.mobileNumber || '',
+        mobile_number: editUser.mobile_number || '',
         designation: editUser.designation || '',
-        employeeID: editUser.employeeID || '',
+        emp_id: editUser.emp_id || '',
         address: editUser.address || '',
         role: editUser.role || '',
         gender: editUser.gender || ''
       });
-      setProfileImage(editUser.profileImage || null);
+      setProfileImage(editUser.profilePicture || null);
     } else {
       reset();
       setProfileImage(null);
     }
+
+    fetchRoles();
   }, [editUser, reset]);
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setProfileImage(reader.result);
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setProfileImage(base64String); // for preview
+        setValue('profilePicture', base64String); // for submission
+      };
       reader.readAsDataURL(file);
     }
   };
 
-  const onSubmit = (data) => {
-    console.log('Form Submitted:', data);
+  const onSubmit = async (data) => {
+    const payload = {
+      name : data.name,
+      email : data.email,
+      mobile_number : data.mobile_number,
+      designation : data.designation,
+      emp_id : data.emp_id,
+      address : data.address,
+      role : data.role,
+      gender : data.gender,
+      profilePicture : data.profilePicture,
+    };
+
+    try {
+      if (editUser) {
+        // ✏️ Edit Mode
+        setToastData({
+          type: "success",
+          message: "User Role Update successfully!",
+        });
+        setShowToast(true);
+        const response = await putRequest(`/users/${editUser.id}`, payload); // Use the correct ID
+        
+        console.log('Updated:', response.data);
+      } else {
+        // 🆕 Create Mode
+        setToastData({
+          type: "success",
+          message: "User Role Create successfully!",
+        });
+        setShowToast(true);
+        const response = await postRequest('/users', payload);
+        console.log('Created:', response.data);
+      }
+
+      // Optional: Close modal and refresh roles list
+      handleClose();
+
+      // ✅ Tell parent to refresh table
+      onSuccess?.();
+      // console.log('Form Submitted:', data);
+    } catch (error) {
+      setToastData({
+        type: "warning",
+        message: "something went wrong",
+      });
+      setShowToast(true);
+      console.error('API Error:', error.response?.data || error.message);
+    }
   };
 
   return (
     <Dialog onClose={handleClose} open={open}>
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12}>
@@ -104,7 +195,7 @@ const UserModals = ({ open, handleClose, editUser }) => {
                       </IconButton>
                     </label>
                   </Grid>
-                  {(['name', 'email', 'mobileNumber', 'designation', 'employeeID', 'address'] as const).map((field) => (
+                  {(['name', 'email', 'mobile_number', 'designation', 'emp_id', 'address'] as const).map((field) => (
                   <Grid item xs={field === 'address' ? 12 : 6} key={field}>
                     <Controller
                       name={field}
@@ -127,16 +218,18 @@ const UserModals = ({ open, handleClose, editUser }) => {
                     <FormControl fullWidth error={!!errors.role}>
                       <InputLabel>Role</InputLabel>
                       <Controller
-                        name="role"
-                        control={control}
-                        render={({ field }) => (
-                          <Select {...field}>
-                            <MenuItem value="Admin">Admin</MenuItem>
-                            <MenuItem value="User">User</MenuItem>
-                            <MenuItem value="Manager">Manager</MenuItem>
-                          </Select>
-                        )}
-                      />
+                      name="role"
+                      control={control}
+                      render={({ field }) => (
+                        <Select {...field} label="Role">
+                          {roles.map((role: any) => (
+                            <MenuItem key={role.role} value={role.role}>
+                              {role.roleName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
                       <FormHelperText>{errors.role?.message}</FormHelperText>
                     </FormControl>
                   </Grid>

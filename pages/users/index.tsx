@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { useEffect, useState } from 'react';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageHeader from '@/content/Management/Users/PageHeader';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
@@ -8,13 +9,18 @@ import Footer from '@/components/Footer';
 import RecentOrders from '@/content/Management/Users/RecentOrders';
 
 function ApplicationsTransactions() {
+  const [reloadTable, setReloadTable] = useState(false);
+
+  const handleRefresh = () => {
+    setReloadTable(prev => !prev); // toggle to trigger refresh
+  };
   return (
     <>
       <Head>
         <title>Users - Applications</title>
       </Head>
       <PageTitleWrapper>
-        <PageHeader />
+        <PageHeader  onRefresh={handleRefresh} />
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid
@@ -25,7 +31,7 @@ function ApplicationsTransactions() {
           spacing={3}
         >
           <Grid item xs={12}>
-            <RecentOrders />
+            <RecentOrders reload={reloadTable} /> {/* ✅ pass reload prop */}
           </Grid>
         </Grid>
       </Container>

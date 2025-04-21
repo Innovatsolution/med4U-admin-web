@@ -1,5 +1,6 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useEffect } from 'react';
+import { useEffect, useState  } from 'react';
+import ToastMessage from "../../../toast/ToastMessage";
 import {
     Box,
     Grid,
@@ -42,7 +43,7 @@ const userRole: Record<string, number> = {
   serviceman: 3,
   auditor: 4,
 };
-
+  
 // Styled Timeline Wrapper
 const TimelineWrapper = styled(Timeline)(
   ({ theme }) => `
@@ -85,6 +86,11 @@ const schema = yup.object().shape({
 const UserRoleCreateModals = (props) => {
 
   console.log(props.editRole);
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState({
+    type: "success", // or "error", "info", etc.
+    message: "",
+  });
   
   const {
     control,
@@ -165,10 +171,21 @@ const UserRoleCreateModals = (props) => {
     try {
       if (props.editRole) {
         // ✏️ Edit Mode
+        setToastData({
+          type: "success",
+          message: "User Role Update successfully!",
+        });
+        setShowToast(true);
         const response = await putRequest(`/user-role/${props.editRole.id}`, payload); // Use the correct ID
+        
         console.log('Updated:', response.data);
       } else {
         // 🆕 Create Mode
+        setToastData({
+          type: "success",
+          message: "User Role Create successfully!",
+        });
+        setShowToast(true);
         const response = await postRequest('/user-role', payload);
         console.log('Created:', response.data);
       }
@@ -179,12 +196,20 @@ const UserRoleCreateModals = (props) => {
       // ✅ Tell parent to refresh table
       props.onSuccess?.();
     } catch (error) {
+      setToastData({
+        type: "warning",
+        message: "something went wrong",
+      });
+      setShowToast(true);
       console.error('API Error:', error.response?.data || error.message);
     }
   };
 
+  
+
   return (
     <Dialog onClose={props.handleModalClose} open={props.open} className="custom-scrollbar">
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
         <Grid item xs={12}>
           <Card>

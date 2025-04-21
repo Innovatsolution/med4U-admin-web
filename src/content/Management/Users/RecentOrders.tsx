@@ -1,86 +1,72 @@
-import { Card } from '@mui/material';
+// import { Card } from '@mui/material';
+// import RecentOrdersTable from './RecentOrdersTable';
+// import { subDays } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { Card, CircularProgress, Typography } from '@mui/material';
 import RecentOrdersTable from './RecentOrdersTable';
-import { subDays } from 'date-fns';
+import { getRequest } from '@/services/api';
 
-function RecentOrders() {
-  const users: any = [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      mobileNumber: '+1 234 567 890',
-      role: 'Admin',
-      designation: 'System Administrator',
-      employeeID: 'EMP001',
-      created_at: new Date().getTime()
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'janesmith@example.com',
-      mobileNumber: '+1 987 654 321',
-      role: 'Project Manager',
-      designation: 'Senior Project Manager',
-      employeeID: 'EMP002',
-      created_at: subDays(new Date(), 2).getTime()
-    },
-    {
-      id: '3',
-      name: 'Robert Johnson',
-      email: 'robertj@example.com',
-      mobileNumber: '+44 123 456 789',
-      role: 'Doctor',
-      designation: 'Medical Officer',
-      employeeID: 'EMP003',
-      created_at: subDays(new Date(), 5).getTime()
-    },
-    {
-      id: '4',
-      name: 'Emily Davis',
-      email: 'emilyd@example.com',
-      mobileNumber: '+91 98765 43210',
-      role: 'Nurse',
-      designation: 'Head Nurse',
-      employeeID: 'EMP004',
-      created_at: subDays(new Date(), 10).getTime()
-    },
-    {
-      id: '5',
-      name: 'Michael Brown',
-      email: 'michaelb@example.com',
-      mobileNumber: '+33 654 321 987',
-      role: 'Office Assistant',
-      designation: 'Administrative Assistant',
-      employeeID: 'EMP005',
-      created_at: subDays(new Date(), 15).getTime()
-    },
-    {
-      id: '6',
-      name: 'Sarah Wilson',
-      email: 'sarahw@example.com',
-      mobileNumber: '+49 111 222 333',
-      role: 'Client Project Manager',
-      designation: 'Client Representative',
-      employeeID: 'EMP006',
-      created_at: subDays(new Date(), 20).getTime()
-    },
-    {
-      id: '7',
-      name: 'David Martinez',
-      email: 'davidm@example.com',
-      mobileNumber: '+61 400 500 600',
-      role: 'Client Sponsor',
-      designation: 'Sponsorship Coordinator',
-      employeeID: 'EMP007',
-      created_at: subDays(new Date(), 30).getTime()
-    }
-  ];
+// Mapping from role name to ID
+const userRole: Record<string, number> = {
+  admin: 1,
+  client: 2,
+  serviceman: 3,
+  auditor: 4,
+};
+
+function RecentOrders({reload}) {
   
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+  
+      // ⬇️ Define fetchUsers once
+      const fetchUsers = async () => {
+        setLoading(true); // Optional: show loader during refresh
+        try {
+          const data = await getRequest('/users');
+    
+          const updatedUsers = (data || []).map((roleObj: any) => {
+            const roleName = Object.keys(userRole).find(
+              key => userRole[key] == roleObj.role
+            );
+            return {
+              ...roleObj,
+              roleName: roleName || 'Unknown',
+            };
+          });
+    
+          setUsers(updatedUsers);
+        } catch (error) {
+          console.error('Error fetching user Users:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
   
 
+ // ⬇️ Fetch when `reload` prop changes
+  useEffect(() => {
+    fetchUsers();
+  }, [reload]);
+  
+
+   // ⬇️ Manual refresh (e.g., after a delete inside the table)
+   const handleRefresh = () => {
+    fetchUsers(); // 🔄 manually re-fetch
+  };
   return (
+    // <Card>
+    //   <RecentOrdersTable users={users} />
+    // </Card>
     <Card>
-      <RecentOrdersTable users={users} />
+      {loading ? (
+        <div style={{ padding: 20, textAlign: 'center' }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading Users...</Typography>
+        </div>
+      ) : (
+        <RecentOrdersTable users={users} onRefresh={handleRefresh} />
+      )}
     </Card>
   );
 }

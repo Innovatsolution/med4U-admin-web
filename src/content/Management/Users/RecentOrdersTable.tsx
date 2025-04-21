@@ -25,39 +25,41 @@ import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import UserModals from './userForm';
 import DeleteUserModal from './DeleteConfirm';
+import { deleteRequest } from '@/services/api';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  mobileNumber: string;
-  role: string;
+  mobile_number: string;
+  roleName: string;
   designation: string;
-  employeeID: string;
-  created_at: number;
+  emp_id: string;
+  createdAt: number;
 }
 
 interface UserTableProps {
   className?: string;
   users: User[];
+  onRefresh: any;
 }
 
 interface Filters {
-  role?: string;
+  roleName?: string;
 }
 
 const applyFilters = (users: User[], filters: Filters): User[] => {
-  return users.filter((user) => !filters.role || user.role === filters.role);
+  return users.filter((user) => !filters.roleName || user.roleName === filters.roleName);
 };
 
 const applyPagination = (users: User[], page: number, limit: number): User[] => {
   return users.slice(page * limit, page * limit + limit);
 };
 
-const UserManagementTable: FC<UserTableProps> = ({ users }) => {
+const UserManagementTable: FC<UserTableProps> = ({ users , onRefresh}) => {
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
-  const [filters, setFilters] = useState<Filters>({ role: '' });
+  const [filters, setFilters] = useState<Filters>({ roleName: '' });
   const [openModal, setOpenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -75,9 +77,13 @@ const UserManagementTable: FC<UserTableProps> = ({ users }) => {
   };
 
   // Confirm Delete
-  const handleConfirmDelete = (userId: string) => {
+  const handleConfirmDelete = async (userId: string) => {
     console.log(userId);
     setOpenDeleteModal(false);
+    // Delete data
+    const response = await deleteRequest(`/user-role/${userId}`); // Use the correct ID
+    console.log('delete:', response.data);
+    onRefresh?.();
   };
 
   // Open Edit Modal
@@ -92,7 +98,7 @@ const UserManagementTable: FC<UserTableProps> = ({ users }) => {
   };
 
   const handleRoleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setFilters({ role: e.target.value !== 'all' ? e.target.value : '' });
+    setFilters({ roleName: e.target.value !== 'all' ? e.target.value : '' });
   };
 
   const handlePageChange = (_event: any, newPage: number): void => {
@@ -113,7 +119,7 @@ const UserManagementTable: FC<UserTableProps> = ({ users }) => {
           <Box width={200}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Role</InputLabel>
-              <Select value={filters.role || 'all'} onChange={handleRoleChange} label="Role">
+              <Select value={filters.roleName || 'all'} onChange={handleRoleChange} label="Role">
                 <MenuItem value="all">All Roles</MenuItem>
                 <MenuItem value="Admin">Admin</MenuItem>
                 <MenuItem value="Project Manager">Project Manager</MenuItem>
@@ -148,11 +154,15 @@ const UserManagementTable: FC<UserTableProps> = ({ users }) => {
               <TableRow hover key={user.id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.mobileNumber}</TableCell>
-                <TableCell>{user.role}</TableCell>
+                <TableCell>{user.mobile_number}</TableCell>
+                <TableCell>{user.roleName}</TableCell>
                 <TableCell>{user.designation}</TableCell>
-                <TableCell>{user.employeeID}</TableCell>
-                <TableCell>{format(user.created_at, 'MMMM dd yyyy')}</TableCell>
+                <TableCell>{user.emp_id}</TableCell>
+                <TableCell>
+                  {user.createdAt && !isNaN(new Date(user.createdAt).getTime())
+                    ? format(new Date(user.createdAt), 'MMMM dd yyyy')
+                    : 'N/A'}
+                </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {/* Edit Button */}
@@ -186,9 +196,18 @@ const UserManagementTable: FC<UserTableProps> = ({ users }) => {
         />
       </Box>
       {/* User Modal */}
-      <UserModals open={openModal} handleClose={handleCloseModal} editUser={selectedUser} />
+      <UserModals 
+      open={openModal} 
+      handleClose={handleCloseModal} 
+      onSuccess={onRefresh} // ✅ Pass refresh callback
+      editUser={selectedUser} />
       {/* Delete User Modal */}
-      <DeleteUserModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} user={userToDelete} />
+      <DeleteUserModal 
+        open={openDeleteModal} 
+        handleClose={handleCloseDeleteModal} 
+        handleConfirm={handleConfirmDelete} 
+        user={userToDelete} 
+      />
     </Card>
   );
 };

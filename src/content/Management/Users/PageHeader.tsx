@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import UserModals from './userForm';
 
-function PageHeader() {
+function PageHeader({ onRefresh }) {
   const [open, setOpen] = useState(false);
 
   
@@ -32,7 +32,7 @@ function PageHeader() {
           Create User
         </Button>
       </Grid>
-      <UserModals open={open} handleClose={handleClose} editUser={null}/>
+      <UserModals open={open} handleClose={handleClose} editUser={null} onSuccess={onRefresh}/>
     </Grid>
   );
 }

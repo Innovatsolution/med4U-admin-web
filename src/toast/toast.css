@@ -8,4 +8,7 @@
   .Toastify__toast--error {
     background: #f44336 !important; /* Red error */
   }
+  .Toastify__toast--warning {
+    background: #f4a836 !important; /* Red error */
+  }
   
