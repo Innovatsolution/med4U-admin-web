@@ -24,8 +24,9 @@ import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import ProjectModal from './ProjectsForm';
 import DeleteProjectModal from '../../common/DeleteConfirm';
 import { format } from 'date-fns';
+import { deleteRequest } from '@/services/api';
 
-const ProjectManagementTable = ({ projects }) => {
+const ProjectManagementTable = ({ projects, onRefresh }) => {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(5);
   const [filters, setFilters] = useState({ status: '' });
@@ -51,8 +52,12 @@ const ProjectManagementTable = ({ projects }) => {
     setOpenDeleteModal(false);
   };
 
-  const handleConfirmDelete = (projectId) => {
+  const handleConfirmDelete = async (projectId) => {
     console.log(projectId);
+    // Delete data
+    const response = await deleteRequest(`/projects/${projectId}`); // Use the correct ID
+    console.log('delete:', response.data);
+    onRefresh?.();
     setOpenDeleteModal(false);
   };
 
@@ -79,7 +84,7 @@ const ProjectManagementTable = ({ projects }) => {
 
   const filteredProjects = applyFilters(projects, filters);
   const paginatedProjects = applyPagination(filteredProjects, page, limit);
-
+  
   return (
     <Card>
       <CardHeader
@@ -155,8 +160,13 @@ const ProjectManagementTable = ({ projects }) => {
           rowsPerPageOptions={[5, 10, 25, 30]}
         />
       </Box>
-      <ProjectModal open={openModal} handleClose={handleCloseModal} editProject={selectedProject} />
-      <DeleteProjectModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} data={projectToDelete} />
+      <ProjectModal open={openModal} handleClose={handleCloseModal} editProject={selectedProject} onSuccess={onRefresh}/>
+      <DeleteProjectModal 
+        open={openDeleteModal} 
+        handleClose={handleCloseDeleteModal} 
+        handleConfirm={handleConfirmDelete} 
+        data={projectToDelete} 
+      />
     </Card>
   );
 };

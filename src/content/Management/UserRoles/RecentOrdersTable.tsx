@@ -86,10 +86,6 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh })
         onRefresh?.();
   }
 
-  const handleSave = ()=>{
-
-  }
-
   const paginatedRoles = applyPagination(roles, page, limit);
   const selectedSomeRoles = selectedRoles.length > 0 && selectedRoles.length < roles.length;
   const selectedAllRoles = selectedRoles.length === roles.length;
@@ -189,7 +185,6 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh })
         open={openEditModal}
         handleModalClose={() => setOpenEditModal(false)}
         editRole={selectedRole}
-        handleSave={handleSave}
         onSuccess={onRefresh} // ✅ Pass refresh callback
       />
 

@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import ProjectForm from './ProjectsForm';
 
-function PageHeader() {
+function PageHeader({ onRefresh }) {
   const [open, setOpen] = useState(false);
 
   
@@ -29,7 +29,7 @@ function PageHeader() {
           Create Project
         </Button>
       </Grid>
-      <ProjectForm open={open} handleClose={handleClose} editProject={null}/>
+      <ProjectForm open={open} handleClose={handleClose} editProject={null} onSuccess={onRefresh}/>
     </Grid>
   );
 }

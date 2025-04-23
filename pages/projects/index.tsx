@@ -4,17 +4,23 @@ import PageHeader from '@/content/Management/Projects/PageHeader';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import { Grid, Container } from '@mui/material';
 import Footer from '@/components/Footer';
-
+import { useState } from 'react';
 import Projects from '@/content/Management/Projects/Projects';
 
 function ApplicationsTransactions() {
+  
+  const [reloadTable, setReloadTable] = useState(false);
+
+  const handleRefresh = () => {
+    setReloadTable(prev => !prev); // toggle to trigger refresh
+  };
   return (
     <>
       <Head>
         <title>Transactions - Applications</title>
       </Head>
       <PageTitleWrapper>
-        <PageHeader />
+        <PageHeader onRefresh={handleRefresh}/>
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid
@@ -25,7 +31,7 @@ function ApplicationsTransactions() {
           spacing={3}
         >
           <Grid item xs={12}>
-            <Projects />
+            <Projects reload={reloadTable}/>
           </Grid>
         </Grid>
       </Container>

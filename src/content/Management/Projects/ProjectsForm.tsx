@@ -1,5 +1,4 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -19,6 +18,10 @@ import {
   Button,
   FormHelperText
 } from '@mui/material';
+import ToastMessage from "../../../toast/ToastMessage";
+import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
+import { useEffect, useState  } from 'react';
 
 // ✅ Validation Schema using Yup
 const schema = yup.object().shape({
@@ -32,7 +35,14 @@ const schema = yup.object().shape({
   assignedManager: yup.string().required('Assigned Manager is required')
 });
 
-const ProjectModal = ({ open, handleClose, editProject }) => {
+const ProjectModal = ({ open, handleClose, editProject, onSuccess }) => {
+  
+    const [showToast, setShowToast] = useState(false);
+    const [toastData, setToastData] = useState({
+      type: "success", // or "error", "info", etc.
+      message: "",
+    });
+    
   const {
     register,
     handleSubmit,
@@ -64,13 +74,52 @@ const ProjectModal = ({ open, handleClose, editProject }) => {
   }, [editProject, setValue, reset]);
 
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log('Form Data:', data);
-    handleClose(); // Close modal after submission
+    // handleClose(); // Close modal after submission
+
+    const payload = data;
+  
+    try {
+      if (editProject) {
+        // ✏️ Edit Mode
+        setToastData({
+          type: "success",
+          message: "User Role Update successfully!",
+        });
+        setShowToast(true);
+        const response = await putRequest(`/projects/${editProject.id}`, payload); // Use the correct ID
+        
+        console.log('Updated:', response.data);
+      } else {
+        // 🆕 Create Mode
+        setToastData({
+          type: "success",
+          message: "User Role Create successfully!",
+        });
+        setShowToast(true);
+        const response = await postRequest('/projects', payload);
+        console.log('Created:', response.data);
+      }
+  
+      // Optional: Close modal and refresh roles list
+      handleClose();
+
+      // ✅ Tell parent to refresh table
+      onSuccess?.();
+    } catch (error) {
+      setToastData({
+        type: "warning",
+        message: "something went wrong",
+      });
+      setShowToast(true);
+      console.error('API Error:', error.response?.data || error.message);
+    }
   };
 
   return (
     <Dialog onClose={handleClose} open={open}>
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
         <Grid item xs={12}>
           <Card>

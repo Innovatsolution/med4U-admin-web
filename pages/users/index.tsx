@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageHeader from '@/content/Management/Users/PageHeader';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
