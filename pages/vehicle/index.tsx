@@ -4,17 +4,22 @@ import PageHeader from '@/content/Management/VehicleManagement/PageHeader';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import { Grid, Container } from '@mui/material';
 import Footer from '@/components/Footer';
-
+import { useState } from 'react';
 import RecentOrders from '@/content/Management/VehicleManagement/RecentOrders';
 
 function ApplicationsTransactions() {
+  const [reloadTable, setReloadTable] = useState(false);
+
+  const handleRefresh = () => {
+    setReloadTable(prev => !prev); // toggle to trigger refresh
+  };
   return (
     <>
       <Head>
         <title>Vehicle Management - Applications</title>
       </Head>
       <PageTitleWrapper>
-        <PageHeader />
+        <PageHeader onVehicleRefresh={handleRefresh}/>
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid
@@ -25,7 +30,7 @@ function ApplicationsTransactions() {
           spacing={3}
         >
           <Grid item xs={12}>
-            <RecentOrders />
+            <RecentOrders  vehicleReload={reloadTable}/>
           </Grid>
         </Grid>
       </Container>

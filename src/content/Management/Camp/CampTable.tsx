@@ -24,8 +24,9 @@ import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import CampModal from './CampForm';
 import DeleteCampModal from '../../common/DeleteConfirm';
 import { format } from 'date-fns';
+import { deleteRequest } from '@/services/api';
 
-const CampManagementTable = ({ camps }) => {
+const CampManagementTable = ({ camps, onCampRefresh }) => {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(5);
   const [filters, setFilters] = useState({ status: '' });
@@ -51,8 +52,12 @@ const CampManagementTable = ({ camps }) => {
     setOpenDeleteModal(false);
   };
 
-  const handleConfirmDelete = (campId) => {
+  const handleConfirmDelete = async (campId) => {
     console.log(campId);
+    // Delete data
+    const response = await deleteRequest(`/camps/${campId}`); // Use the correct ID
+    console.log('delete:', response.data);
+    onCampRefresh?.();
     setOpenDeleteModal(false);
   };
 
@@ -157,7 +162,7 @@ const CampManagementTable = ({ camps }) => {
           rowsPerPageOptions={[5, 10, 25, 30]}
         />
       </Box>
-      <CampModal open={openModal} handleClose={handleCloseModal} editCamp={selectedCamp} />
+      <CampModal open={openModal} handleClose={handleCloseModal} editCamp={selectedCamp} onCampSuccess={onCampRefresh}/>
       <DeleteCampModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} data={campToDelete} />
     </Card>
   );

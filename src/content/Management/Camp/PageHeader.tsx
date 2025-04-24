@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import CampForm from './CampForm';
 
-function PageHeader() {
+function PageHeader({onCampRefresh}) {
   const [open, setOpen] = useState(false);
 
   
@@ -29,7 +29,7 @@ function PageHeader() {
           Create Camp
         </Button>
       </Grid>
-      <CampForm open={open} handleClose={handleClose} editCamp={null}/>
+      <CampForm open={open} handleClose={handleClose} editCamp={null} onCampSuccess={onCampRefresh}/>
     </Grid>
   );
 }

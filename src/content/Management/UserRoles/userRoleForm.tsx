@@ -171,30 +171,31 @@ const UserRoleCreateModals = (props) => {
     try {
       if (props.editRole) {
         // ✏️ Edit Mode
+        const response = await putRequest(`/user-role/${props.editRole.id}`, payload); // Use the correct ID
+        console.log('Updated:', response.data);
+        
         setToastData({
           type: "success",
           message: "User Role Update successfully!",
         });
         setShowToast(true);
-        const response = await putRequest(`/user-role/${props.editRole.id}`, payload); // Use the correct ID
-        
-        console.log('Updated:', response.data);
       } else {
+        const response = await postRequest('/user-role', payload);
+        console.log('Created:', response.data);
+        
         // 🆕 Create Mode
         setToastData({
           type: "success",
           message: "User Role Create successfully!",
         });
         setShowToast(true);
-        const response = await postRequest('/user-role', payload);
-        console.log('Created:', response.data);
       }
   
       // Optional: Close modal and refresh roles list
       props.handleModalClose();
 
       // ✅ Tell parent to refresh table
-      props.onSuccess?.();
+      props.onUserRoleSuccess?.();
     } catch (error) {
       setToastData({
         type: "warning",

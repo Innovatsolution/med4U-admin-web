@@ -1,5 +1,5 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -19,6 +19,9 @@ import {
   Button,
   FormHelperText
 } from '@mui/material';
+import ToastMessage from "../../../toast/ToastMessage";
+import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
 
 // Validation schema
 const validationSchema = yup.object().shape({
@@ -36,7 +39,12 @@ const validationSchema = yup.object().shape({
   address: yup.string().required('Address is required'),
 });
 
-const VehicleModals = ({ open, handleClose, editUser }) => {
+const VehicleModals = ({ open, handleClose, editVehicle, onVehicleSuccess }) => {
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState({
+    type: "success", // or "error", "info", etc.
+    message: "",
+  });
   const {
     control,
     handleSubmit,
@@ -58,35 +66,74 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
   });
 
   useEffect(() => {
-    if (editUser) {
+    if (editVehicle) {
       reset({
-        vehicleNumber: editUser.vehicleNumber || '',
-        driverName: editUser.driverName || '',
-        driverEmail: editUser.driverEmail || '',
-        driverMobileNumber: editUser.driverMobileNumber || null,
-        employeeID: editUser.employeeID || '',
-        gender: editUser.gender || '',
-        insuranceClosingDate: editUser.insuranceClosingDate || '',
-        insuranceNumber: editUser.insuranceNumber || '',
-        address: editUser.address || '',
+        vehicleNumber: editVehicle.vehicleNumber || '',
+        driverName: editVehicle.driverName || '',
+        driverEmail: editVehicle.driverEmail || '',
+        driverMobileNumber: editVehicle.driverMobileNumber || null,
+        employeeID: editVehicle.employeeID || '',
+        gender: editVehicle.gender || '',
+        insuranceClosingDate: editVehicle.insuranceClosingDate || '',
+        insuranceNumber: editVehicle.insuranceNumber || '',
+        address: editVehicle.address || '',
       });
     } else {
       reset();
     }
-  }, [editUser, reset]);
+  }, [editVehicle, reset]);
 
-  const onSubmit = (data) => {
-    console.log('Form Submitted:', data);
-    handleClose();
+  const onSubmit = async (data) => {
+    // console.log('Form Submitted:', data);
+    // handleClose();
+    const payload = data;
+  
+    try {
+      if (editVehicle) {
+        // ✏️ Edit Mode
+        const response = await putRequest(`/vehicles/${editVehicle.id}`, payload); // Use the correct ID
+        console.log('Updated:', response.data);
+        
+        setToastData({
+          type: "success",
+          message: "User Role Update successfully!",
+        });
+        setShowToast(true);
+      } else {
+        const response = await postRequest('/vehicles', payload);
+        console.log('Created:', response.data);
+        
+        // 🆕 Create Mode
+        setToastData({
+          type: "success",
+          message: "User Role Create successfully!",
+        });
+        setShowToast(true);
+      }
+  
+      // Optional: Close modal and refresh roles list
+      handleClose();
+
+      // ✅ Tell parent to refresh table
+      onVehicleSuccess?.();
+    } catch (error) {
+      setToastData({
+        type: "warning",
+        message: "something went wrong",
+      });
+      setShowToast(true);
+      console.error('API Error:', error.response?.data || error.message);
+    }
   };
 
   return (
     <Dialog onClose={handleClose} open={open}>
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
           <Grid item xs={12}>
             <Card>
-              <CardHeader title={editUser ? 'Edit Vehicle Details' : 'Add Vehicle Details'} />
+              <CardHeader title={editVehicle ? 'Edit Vehicle Details' : 'Add Vehicle Details'} />
               <Divider />
               <CardContent>
                 <Box>
@@ -202,7 +249,7 @@ const VehicleModals = ({ open, handleClose, editUser }) => {
                     {/* Submit Button */}
                     <Grid item xs={12} display="flex" justifyContent="flex-end">
                       <Button type="submit" variant="contained" color="primary">
-                        {editUser ? 'Update' : 'Create'}
+                        {editVehicle ? 'Update' : 'Create'}
                       </Button>
                     </Grid>
                   </Grid>

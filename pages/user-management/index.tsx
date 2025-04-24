@@ -5,7 +5,7 @@ import PageTitleWrapper from '@/components/PageTitleWrapper';
 import { Grid, Container } from '@mui/material';
 import Footer from '@/components/Footer';
 import RecentOrders from '@/content/Management/UserRoles/RecentOrders';
-import { useState } from 'react'; // ✅ import useState
+import { useState } from 'react';
 
 function ApplicationsTransactions() {
   const [reloadTable, setReloadTable] = useState(false);
@@ -20,7 +20,7 @@ function ApplicationsTransactions() {
         <title>Transactions - Applications</title>
       </Head>
       <PageTitleWrapper>
-        <PageHeader onRefresh={handleRefresh} /> {/* ✅ pass as prop */}
+        <PageHeader onUserRoleRefresh={handleRefresh} /> {/* ✅ pass as prop */}
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid

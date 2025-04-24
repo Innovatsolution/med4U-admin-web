@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import UserModals from './vehicleForm';
 
-function PageHeader() {
+function PageHeader({ onVehicleRefresh }) {
   const [open, setOpen] = useState(false);
 
   
@@ -32,7 +32,7 @@ function PageHeader() {
           Create Vehicle
         </Button>
       </Grid>
-      <UserModals open={open} handleClose={handleClose} editUser={null}/>
+      <UserModals open={open} handleClose={handleClose} editVehicle={null} onVehicleSuccess={onVehicleRefresh}/>
     </Grid>
   );
 }

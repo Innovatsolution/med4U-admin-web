@@ -33,14 +33,14 @@ interface Role {
 interface RoleManagementTableProps {
   className?: string;
   roles: Role[];
-  onRefresh: any;
+  onUserRoleRefresh: any;
 }
 
 const applyPagination = (roles: Role[], page: number, limit: number): Role[] => {
   return roles.slice(page * limit, page * limit + limit);
 };
 
-const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh }) => {
+const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onUserRoleRefresh }) => {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const selectedBulkActions = selectedRoles.length > 0;
   const [page, setPage] = useState<number>(0);
@@ -83,7 +83,7 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh })
         // Delete data
         const response = await deleteRequest(`/user-role/${selectedRole.id}`); // Use the correct ID
         console.log('delete:', response.data);
-        onRefresh?.();
+        onUserRoleRefresh?.();
   }
 
   const paginatedRoles = applyPagination(roles, page, limit);
@@ -185,7 +185,7 @@ const RoleManagementTable: FC<RoleManagementTableProps> = ({ roles, onRefresh })
         open={openEditModal}
         handleModalClose={() => setOpenEditModal(false)}
         editRole={selectedRole}
-        onSuccess={onRefresh} // ✅ Pass refresh callback
+        onUserRoleSuccess={onUserRoleRefresh} // ✅ Pass refresh callback
       />
 
       {/* Delete Role Modal */}

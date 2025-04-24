@@ -56,7 +56,7 @@ function RecentOrders({reload}) {
           <Typography variant="body2" sx={{ mt: 2 }}>Loading roles...</Typography>
         </div>
       ) : (
-        <RoleManagementTable roles={roles} onRefresh={handleRefresh} />
+        <RoleManagementTable roles={roles} onUserRoleRefresh={handleRefresh} />
       )}
     </Card>
   );

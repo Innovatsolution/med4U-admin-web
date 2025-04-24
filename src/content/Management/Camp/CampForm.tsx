@@ -1,5 +1,5 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { useEffect } from 'react';
+import { useEffect, useState  } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -8,6 +8,9 @@ import {
   Grid, Card, CardHeader, CardContent, Divider, FormControl, InputLabel, Select,
   MenuItem, Dialog, TextField, Button, Autocomplete, FormHelperText
 } from '@mui/material';
+import ToastMessage from "../../../toast/ToastMessage";
+import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
 
 const validationSchema = yup.object().shape({
   name: yup.string().required('Camp Name is required'),
@@ -30,7 +33,12 @@ const validationSchema = yup.object().shape({
   clientSponsor: yup.string().required('Client Sponsor is required')
 });
 
-const CampModal = ({ open, handleClose, editCamp }) => {
+const CampModal = ({ open, handleClose, editCamp, onCampSuccess }) => {
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState({
+    type: "success", // or "error", "info", etc.
+    message: "",
+  });
   const {
     register,
     handleSubmit,
@@ -52,12 +60,51 @@ const CampModal = ({ open, handleClose, editCamp }) => {
     }
   }, [editCamp, setValue]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log('Form Data:', data);
+    const payload = data;
+    
+      try {
+        if (editCamp) {
+          // ✏️ Edit Mode
+          const response = await putRequest(`/camps/${editCamp.id}`, payload); // Use the correct ID
+          console.log('Updated:', response.data);
+          
+          setToastData({
+            type: "success",
+            message: "Camp Details Update successfully!",
+          });
+          setShowToast(true);
+        } else {
+          const response = await postRequest('/camps', payload);
+          console.log('Created:', response.data);
+          
+          // 🆕 Create Mode
+          setToastData({
+            type: "success",
+            message: "Camp Details Create successfully!",
+          });
+          setShowToast(true);
+        }
+    
+        // Optional: Close modal and refresh roles list
+        handleClose();
+  
+        // ✅ Tell parent to refresh table
+        onCampSuccess?.();
+      } catch (error) {
+        setToastData({
+          type: "warning",
+          message: "something went wrong",
+        });
+        setShowToast(true);
+        console.error('API Error:', error.response?.data || error.message);
+      }
   };
 
   return (
     <Dialog onClose={handleClose} open={open}>
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
           <Grid item xs={12}>

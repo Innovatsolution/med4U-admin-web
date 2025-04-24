@@ -21,6 +21,7 @@ import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import VehicleModals from './vehicleForm';
 import DeleteVehicleModal from './DeleteConfirm';
+import { deleteRequest } from '@/services/api';
 
 interface Vehicle {
   id: string;
@@ -38,13 +39,14 @@ interface Vehicle {
 interface VehicleTableProps {
   className?: string;
   vehicles: Vehicle[];
+  onVehicleRefresh: any;
 }
 
 const applyPagination = (vehicles: Vehicle[], page: number, limit: number): Vehicle[] => {
   return vehicles.slice(page * limit, page * limit + limit);
 };
 
-const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
+const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles, onVehicleRefresh }) => {
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [openModal, setOpenModal] = useState(false);
@@ -64,8 +66,12 @@ const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
   };
 
   // Confirm Delete
-  const handleConfirmDelete = (vehicleId: string) => {
+  const handleConfirmDelete = async (vehicleId: string) => {
     console.log(vehicleId);
+    // Delete data
+    const response = await deleteRequest(`/vehicles/${vehicleId}`); // Use the correct ID
+    console.log('delete:', response.data);
+    onVehicleRefresh?.();
     setOpenDeleteModal(false);
   };
 
@@ -155,7 +161,7 @@ const VehicleManagementTable: FC<VehicleTableProps> = ({ vehicles }) => {
         />
       </Box>
       {/* Vehicle Modal */}
-      <VehicleModals open={openModal} handleClose={handleCloseModal} editUser={selectedVehicle} />
+      <VehicleModals open={openModal} handleClose={handleCloseModal} editVehicle={selectedVehicle} onVehicleSuccess={onVehicleRefresh}/>
       {/* Delete Vehicle Modal */}
       <DeleteVehicleModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} vehicle={vehicleToDelete} />
     </Card>
