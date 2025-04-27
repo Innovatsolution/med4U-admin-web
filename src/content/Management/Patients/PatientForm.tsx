@@ -1,5 +1,6 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
 import { useEffect, useState } from 'react';
+import ToastMessage from "../../../toast/ToastMessage";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -24,6 +25,8 @@ import {
   FormHelperText,
   Paper,
 } from '@mui/material';
+import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
 
 // Validation Schema using Yup
 const validationSchema = yup.object().shape({
@@ -48,36 +51,50 @@ const validationSchema = yup.object().shape({
   aadharCardPicture: yup.mixed().required("Aadhar Card is required"),
 });
 
-const PatientModals = ({ open, handleClose, editPatient }) => {
+const PatientModals = ({ open, handleClose, editPatient, onPatientSuccess }) => {
+  
+    const [showToast, setShowToast] = useState(false);
+    const [toastData, setToastData] = useState({
+      type: "success", // or "error", "info", etc.
+      message: "",
+    });
+    
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    reset,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      patientName: editPatient?.patientName || '',
-      dateOfBirth: editPatient?.dateOfBirth || '',
-      gender: editPatient?.gender || '',
-      bloodGroup: editPatient?.bloodGroup || '',
-      maritalStatus: editPatient?.maritalStatus || '',
-      nationality: editPatient?.nationality || '',
-      aadharCardNumber: editPatient?.aadharCardNumber || '',
-      email: editPatient?.email || '',
-      mobileNumber: editPatient?.mobileNumber || '',
-      emergencyContactNumber: editPatient?.emergencyContactNumber || '',
-      address: editPatient?.address || '',
-      height: editPatient?.height || '',
-      weight: editPatient?.weight || '',
-      pregnancyStatus: editPatient?.pregnancyStatus || '',
-      doctorAssigned: editPatient?.doctorAssigned || '',
-      checkingDate: editPatient?.checkingDate || '',
-      lifestyleHabits: editPatient?.lifestyleHabits || [],
+      patientName: '',
+      dateOfBirth: '',
+      gender: '',
+      bloodGroup: '',
+      maritalStatus: '',
+      nationality: '',
+      aadharCardNumber: '',
+      email: '',
+      mobileNumber: '',
+      emergencyContactNumber: '',
+      address: '',
+      height: '',
+      weight: '',
+      pregnancyStatus: '',
+      doctorAssigned: '',
+      checkingDate: '',
+      lifestyleHabits: [],
     }
   });
 
+  useEffect(() => {
+    if (editPatient) {
+      reset(editPatient);
+    }
+  }, [editPatient, reset]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null);
   const [aadharCardPicture, setAadharCardPicture] = useState(null);
   const [profilePreview, setProfilePreview] = useState(null);
@@ -115,13 +132,53 @@ const PatientModals = ({ open, handleClose, editPatient }) => {
   };
 
 
-  const onSubmit = (data) => {
-    console.log('Form Submitted:', data);
-    handleClose();
+  const onSubmit = async (data) => {
+    // console.log('Form Submitted:', data);
+    // handleClose();
+        const payload = data;
+      
+        try {
+          if (editPatient) {
+            // ✏️ Edit Mode
+            const response = await putRequest(`/patients/${editPatient.id}`, payload); // Use the correct ID
+            console.log('Updated:', response.data);
+            
+            setToastData({
+              type: "success",
+              message: "User Role Update successfully!",
+            });
+            setShowToast(true);
+          } else {
+            const response = await postRequest('/patients', payload);
+            console.log('Created:', response.data);
+            
+            // 🆕 Create Mode
+            setToastData({
+              type: "success",
+              message: "User Role Create successfully!",
+            });
+            setShowToast(true);
+          }
+      
+          // Optional: Close modal and refresh roles list
+          handleClose();
+    
+          // ✅ Tell parent to refresh table
+          onPatientSuccess?.();
+        } catch (error) {
+          setToastData({
+            type: "warning",
+            message: "something went wrong",
+          });
+          setShowToast(true);
+          console.error('API Error:', error.response?.data || error.message);
+
+        }
   };
 
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="md" fullWidth>
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
           <Grid item xs={12}>

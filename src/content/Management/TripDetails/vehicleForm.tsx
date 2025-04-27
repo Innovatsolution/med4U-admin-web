@@ -20,6 +20,10 @@ import {
   IconButton
 } from '@mui/material';
 import DeleteIcon from "@mui/icons-material/Delete";
+import ToastMessage from "../../../toast/ToastMessage";
+import { postRequest } from '@/services/api';
+import { putRequest } from '@/services/api';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 const schema = yup.object().shape({
   vehicleNumber: yup.string().required('Vehicle Number is required'),
@@ -33,6 +37,12 @@ const schema = yup.object().shape({
   speedometerBefore: yup.number().typeError('Must be a number').required('Required'),
   speedometerAfter: yup.number().typeError('Must be a number').required('Required'),
   vehicleIssues: yup.string().required('Required'),
+  tripStatus: yup.string().required('Required'),
+  startTime: yup.string().required('Required'),
+  endTime: yup.string().required('Required'),
+  totalDistance: yup.string().required('Required'),
+  fuelRefillingAmount: yup.string().required('Required'),
+  fuelRefillingLocation: yup.string().required('Required'),
   issueDescription: yup.string().when('vehicleIssues', (vehicleIssues, schema) => {
     if (Array.isArray(vehicleIssues)) {
       vehicleIssues = vehicleIssues[0]; // Extract the first value if it's an array
@@ -50,7 +60,13 @@ const schema = yup.object().shape({
   ),
 });
 
-const VehicleModals = ({ open, handleClose, editTrip }) => {
+const VehicleModals = ({ open, handleClose, editTrip, onTripSuccess }) => {
+  
+    const [showToast, setShowToast] = useState(false);
+    const [toastData, setToastData] = useState({
+      type: "success", // or "error", "info", etc.
+      message: "",
+    });
   const {
     register,
     handleSubmit,
@@ -73,6 +89,12 @@ const VehicleModals = ({ open, handleClose, editTrip }) => {
       speedometerAfter: null,
       vehicleIssues: '',
       issueDescription: '',
+      tripStatus: '',
+      startTime: '',
+      endTime: '',
+      totalDistance: '',
+      fuelRefillingAmount: '',
+      fuelRefillingLocation: '',
       attachments: [],
     },
   });
@@ -101,12 +123,50 @@ const VehicleModals = ({ open, handleClose, editTrip }) => {
     setValue("attachments", newFiles, { shouldValidate: true }); // ✅ Triggers validation
   };
 
-  const onSubmit = (data) => {
-    console.log('Form Data:', data);
+  const onSubmit = async (data) => {
+    const payload = data;
+  
+    try {
+      if (editTrip) {
+        // ✏️ Edit Mode
+        const response = await putRequest(`/trips/${editTrip.id}`, payload); // Use the correct ID
+        console.log('Updated:', response.data);
+        
+        setToastData({
+          type: "success",
+          message: "Vehicle Trip Details Update successfully!",
+        });
+        setShowToast(true);
+      } else {
+        const response = await postRequest('/trips', payload);
+        console.log('Created:', response.data);
+        
+        // 🆕 Create Mode
+        setToastData({
+          type: "success",
+          message: "Vehicle Trip Details Create successfully!",
+        });
+        setShowToast(true);
+      }
+  
+      // Optional: Close modal and refresh roles list
+      handleClose();
+
+      // ✅ Tell parent to refresh table
+      onTripSuccess?.();
+    } catch (error) {
+      setToastData({
+        type: "warning",
+        message: "something went wrong",
+      });
+      setShowToast(true);
+      console.error('API Error:', error.response?.data || error.message);
+    }
   };
 
   return (
     <Dialog onClose={handleClose} open={open}>
+      <ToastMessage show={showToast} setShow={setShowToast} toastData={toastData} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -143,6 +203,23 @@ const VehicleModals = ({ open, handleClose, editTrip }) => {
                     <TextField label="Trip Date" type="date" fullWidth InputLabelProps={{ shrink: true }} {...register('tripDate')} error={!!errors.tripDate} helperText={errors.tripDate?.message} />
                   </Grid>
                   <Grid item xs={6}>
+                    <FormControl fullWidth error={!!errors.tripStatus}>
+                      <InputLabel>Trip Status</InputLabel>
+                      <Controller
+                        name="tripStatus"
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field} label="Trip Status">
+                            <MenuItem value="Started">Started</MenuItem>
+                            <MenuItem value="Completed">Completed</MenuItem>
+                            <MenuItem value="Cancelled">Cancelled</MenuItem>
+                          </Select>
+                        )}
+                      />
+                      <FormHelperText>{errors.tripStatus?.message}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6}>
                     <TextField label="Start Location" fullWidth {...register('startLocation')} error={!!errors.startLocation} helperText={errors.startLocation?.message} />
                   </Grid>
                   <Grid item xs={6}>
@@ -153,6 +230,82 @@ const VehicleModals = ({ open, handleClose, editTrip }) => {
                   </Grid>
                   <Grid item xs={6}>
                     <TextField label="End GPS Coordinates" fullWidth {...register('endGPS')} error={!!errors.endGPS} helperText={errors.endGPS?.message} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Controller
+                      name="startTime"
+                      control={control}
+                      render={({ field }) => (
+                        <TimePicker
+                          label="Start Time"
+                          value={field.value || null}
+                          onChange={(value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              fullWidth
+                              error={!!errors.startTime}
+                              helperText={errors.startTime?.message}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  {/* End Time - TimePicker */}
+                  <Grid item xs={6}>
+                    <Controller
+                      name="endTime"
+                      control={control}
+                      render={({ field }) => (
+                        <TimePicker
+                          label="End Time"
+                          value={field.value || null}
+                          onChange={(value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              fullWidth
+                              error={!!errors.endTime}
+                              helperText={errors.endTime?.message}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Total Distance (km)"
+                      type="number"
+                      fullWidth
+                      {...register('totalDistance')}
+                      error={!!errors.totalDistance}
+                      helperText={errors.totalDistance?.message}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Fuel Refilling Amount (liters)"
+                      type="number"
+                      fullWidth
+                      {...register('fuelRefillingAmount')}
+                      error={!!errors.fuelRefillingAmount}
+                      helperText={errors.fuelRefillingAmount?.message}
+                    />
+                  </Grid>
+
+                  {/* Fuel Refilling Location - TextField */}
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Fuel Refilling Location"
+                      type="text"
+                      fullWidth
+                      {...register('fuelRefillingLocation')}
+                      error={!!errors.fuelRefillingLocation}
+                      helperText={errors.fuelRefillingLocation?.message}
+                    />
                   </Grid>
                   <Grid item xs={6}>
                     <TextField label="Speedometer Before Trip" type="number" fullWidth {...register('speedometerBefore')} error={!!errors.speedometerBefore} helperText={errors.speedometerBefore?.message} />

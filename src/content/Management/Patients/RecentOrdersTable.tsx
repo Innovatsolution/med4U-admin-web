@@ -22,6 +22,7 @@ import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import PatientModals from './PatientForm';
 import DeletePatientModal from './DeleteConfirm';
+import { deleteRequest } from '@/services/api';
 
 interface Patient {
   id: string;
@@ -40,13 +41,14 @@ interface Patient {
 interface PatientTableProps {
   className?: string;
   patients: Patient[];
+  onPatientRefresh: any;
 }
 
 const applyPagination = (patients: Patient[], page: number, limit: number): Patient[] => {
   return patients.slice(page * limit, page * limit + limit);
 };
 
-const PatientManagementTable: FC<PatientTableProps> = ({ patients }) => {
+const PatientManagementTable: FC<PatientTableProps> = ({ patients, onPatientRefresh }) => {
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [openModal, setOpenModal] = useState(false);
@@ -66,8 +68,12 @@ const PatientManagementTable: FC<PatientTableProps> = ({ patients }) => {
   };
 
   // Confirm Delete
-  const handleConfirmDelete = (patientId: string) => {
+  const handleConfirmDelete = async(patientId: string) => {
     console.log(patientId);
+    // Delete data
+    const response = await deleteRequest(`/patients/${patientId}`); // Use the correct ID
+    console.log('delete:', response.data);
+    onPatientRefresh?.();
     setOpenDeleteModal(false);
   };
 
@@ -119,13 +125,21 @@ const PatientManagementTable: FC<PatientTableProps> = ({ patients }) => {
                   <Avatar src={patient.profilePicture} alt={patient.patientName} />
                 </TableCell>
                 <TableCell>{patient.patientName}</TableCell>
-                <TableCell>{format(new Date(patient.dateOfBirth), 'MMMM dd yyyy')}</TableCell>
+                <TableCell>
+                  {patient.dateOfBirth && !isNaN(new Date(patient.dateOfBirth).getTime())
+                  ? format(new Date(patient.dateOfBirth), 'MMMM dd yyyy')
+                  : 'N/A'}
+                </TableCell>
                 <TableCell>{patient.gender}</TableCell>
                 <TableCell>{patient.bloodGroup}</TableCell>
                 <TableCell>{patient.email}</TableCell>
                 <TableCell>{patient.mobileNumber}</TableCell>
                 <TableCell>{patient.doctorAssigned}</TableCell>
-                <TableCell>{format(new Date(patient.checkingDate), 'MMMM dd yyyy')}</TableCell>
+                <TableCell>
+                  {patient.checkingDate && !isNaN(new Date(patient.checkingDate).getTime())
+                  ? format(new Date(patient.checkingDate), 'MMMM dd yyyy')
+                  : 'N/A'}
+                </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {/* Edit Button */}
@@ -159,7 +173,7 @@ const PatientManagementTable: FC<PatientTableProps> = ({ patients }) => {
         />
       </Box>
       {/* Patient Modal */}
-      <PatientModals open={openModal} handleClose={handleCloseModal} editPatient={selectedPatient} />
+      <PatientModals open={openModal} handleClose={handleCloseModal} editPatient={selectedPatient} onPatientSuccess={onPatientRefresh}/>
       {/* Delete Patient Modal */}
       <DeletePatientModal
         open={openDeleteModal}

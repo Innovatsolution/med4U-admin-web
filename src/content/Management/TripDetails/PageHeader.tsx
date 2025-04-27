@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import VehicleModals from './vehicleForm';
 
-function PageHeader() {
+function PageHeader({ onTripRefresh }) {
   const [open, setOpen] = useState(false);
 
   
@@ -32,7 +32,7 @@ function PageHeader() {
           Create Trip
         </Button>
       </Grid>
-      <VehicleModals open={open} handleClose={handleClose} editTrip={null}/>
+      <VehicleModals open={open} handleClose={handleClose} editTrip={null} onTripSuccess={onTripRefresh}/>
     </Grid>
   );
 }

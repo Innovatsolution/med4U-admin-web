@@ -4,7 +4,7 @@ import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { useState } from 'react';
 import UserModals from './PatientForm';
 
-function PageHeader() {
+function PageHeader( { onPatientRefresh } ) {
   const [open, setOpen] = useState(false);
 
   
@@ -32,7 +32,7 @@ function PageHeader() {
           Create Patient
         </Button>
       </Grid>
-      <UserModals open={open} handleClose={handleClose} editPatient={null}/>
+      <UserModals open={open} handleClose={handleClose} editPatient={null} onPatientSuccess={onPatientRefresh}/>
     </Grid>
   );
 }

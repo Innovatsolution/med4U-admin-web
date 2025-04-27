@@ -4,17 +4,22 @@ import PageHeader from '@/content/Management/Patients/PageHeader';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import { Grid, Container } from '@mui/material';
 import Footer from '@/components/Footer';
-
+import { useState } from 'react';
 import RecentOrders from '@/content/Management/Patients/RecentOrders';
 
 function ApplicationsTransactions() {
+  const [patientReloadTable, setReloadTable] = useState(false);
+
+  const handlePatientRefresh = () => {
+    setReloadTable(prev => !prev); // toggle to trigger refresh
+  };
   return (
     <>
       <Head>
         <title>Patient Management - Applications</title>
       </Head>
       <PageTitleWrapper>
-        <PageHeader />
+        <PageHeader onPatientRefresh={handlePatientRefresh} />
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid
@@ -25,7 +30,7 @@ function ApplicationsTransactions() {
           spacing={3}
         >
           <Grid item xs={12}>
-            <RecentOrders />
+            <RecentOrders patientReload={patientReloadTable} />
           </Grid>
         </Grid>
       </Container>

@@ -21,6 +21,7 @@ import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import VehicleModals from './vehicleForm';
 import DeleteVehicleModal from './DeleteConfirm';
+import { deleteRequest } from '@/services/api';
 
 interface VehicleTrip {
   id: string;
@@ -48,13 +49,14 @@ interface VehicleTrip {
 interface VehicleTripTableProps {
   className?: string;
   trips: VehicleTrip[];
+  onTripRefresh: any;
 }
 
 const applyPagination = (trips: VehicleTrip[], page: number, limit: number): VehicleTrip[] => {
   return trips.slice(page * limit, page * limit + limit);
 };
 
-const VehicleManagementTable: FC<VehicleTripTableProps> = ({ trips }) => {
+const VehicleManagementTable: FC<VehicleTripTableProps> = ({ trips, onTripRefresh }) => {
   const [page, setPage] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
   const [openModal, setOpenModal] = useState(false);
@@ -74,8 +76,13 @@ const VehicleManagementTable: FC<VehicleTripTableProps> = ({ trips }) => {
   };
 
   // Confirm Delete
-  const handleConfirmDelete = (tripId: string) => {
+  const handleConfirmDelete = async (tripId: string) => {
     console.log(tripId);
+    
+    // Delete data
+    const response = await deleteRequest(`/trips/${tripId}`); // Use the correct ID
+    console.log('delete:', response.data);
+    onTripRefresh?.();
     setOpenDeleteModal(false);
   };
 
@@ -126,7 +133,12 @@ const VehicleManagementTable: FC<VehicleTripTableProps> = ({ trips }) => {
                 <TableCell>{trip.vehicleNumber}</TableCell>
                 <TableCell>{trip.tripType}</TableCell>
                 <TableCell>{trip.driverName}</TableCell>
-                <TableCell>{format(new Date(trip.tripDate), 'MMMM dd yyyy')}</TableCell>
+                <TableCell>
+                    {trip.tripDate && !isNaN(new Date(trip.tripDate).getTime())
+                    ? format(new Date(trip.tripDate), 'MMMM dd yyyy')
+                    : 'N/A'}
+                </TableCell>
+                {/* {format(new Date(trip.tripDate), 'MMMM dd yyyy')} */}
                 <TableCell>{trip.tripStatus}</TableCell>
                 <TableCell>{trip.startLocation}</TableCell>
                 <TableCell>{trip.endLocation}</TableCell>
@@ -165,7 +177,7 @@ const VehicleManagementTable: FC<VehicleTripTableProps> = ({ trips }) => {
         />
       </Box>
       {/* Vehicle Trip Modal */}
-      <VehicleModals open={openModal} handleClose={handleCloseModal} editTrip={selectedTrip} />
+      <VehicleModals open={openModal} handleClose={handleCloseModal} editTrip={selectedTrip} onTripSuccess={onTripRefresh}/>
       {/* Delete Vehicle Trip Modal */}
       <DeleteVehicleModal open={openDeleteModal} handleClose={handleCloseDeleteModal} handleConfirm={handleConfirmDelete} trip={tripToDelete} />
     </Card>
